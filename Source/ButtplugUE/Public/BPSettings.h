@@ -20,14 +20,17 @@ public:
 
 	UBPSettings();
 
-	UPROPERTY(Config, EditAnywhere)
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Logging level to display in Log."))
 		EBPLogVerbosity LoggingVerbosity = EBPLogVerbosity::All;
 
-	UPROPERTY(Config, EditAnywhere)
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Address of the ButtplugIO server, Intiface Central."))
 		FString Server = "ws://127.0.0.1";
 
-	UPROPERTY(Config, EditAnywhere)
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Port of the ButtplugIO server, Intiface Central."))
 		int32 Port = 12345;
+
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Name to provide to Intiface upon connection, good for identifying your game to users."))
+		FString ClientName = "ButtplugUE";
 
 	static EBPLogVerbosity GetLoggingVerbosity();
 
@@ -36,6 +39,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Settings"))
 		static int32 GetButtplugPort();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Settings"))
+		static FString GetButtplugClientName();
 
 	virtual FName GetSectionName() const override;
 };

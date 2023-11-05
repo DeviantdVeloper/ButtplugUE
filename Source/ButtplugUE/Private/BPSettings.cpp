@@ -6,7 +6,6 @@
 UBPSettings::UBPSettings()
 {
 	CategoryName = "Plugins";
-	SectionName = "ButtplugUE";
 }
 
 EBPLogVerbosity UBPSettings::GetLoggingVerbosity()
@@ -24,7 +23,12 @@ int32 UBPSettings::GetButtplugPort()
 	return GetMutableDefault<UBPSettings>()->Port;
 }
 
+FString UBPSettings::GetButtplugClientName()
+{
+	return GetMutableDefault<UBPSettings>()->ClientName;
+}
+
 FName UBPSettings::GetSectionName() const
 {
-	return SectionName;
+	return "ButtplugUE";
 }

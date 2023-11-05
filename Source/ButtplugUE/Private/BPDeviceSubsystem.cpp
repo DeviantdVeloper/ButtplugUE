@@ -41,7 +41,7 @@ void UBPDeviceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UBPDeviceSubsystem::Deinitialize()
 {
-	if (Socket.IsValid())
+	if (IsConnected())
 	{
 		//TODO consider sending a StopAllDevices message here.
 		Socket->Close();
@@ -87,6 +87,13 @@ void UBPDeviceSubsystem::OnClosed(int32 StatusCode, const FString& Reason, bool 
 void UBPDeviceSubsystem::OnMessage(const FString& Message)
 {
 	BPLog::Message(this, "Message Received: " + Message);
+	TArray<FInstancedStruct> Messages = UBPTypes::DeserializeMessage(this, Message);
+
+	for (const FInstancedStruct& Msg : Messages)
+	{
+		BPLog::Warning(this, Msg.GetPtr<FBPMessageBase>()->ToString());
+	}
+
 }
 
 void UBPDeviceSubsystem::OnRawMessage(const void* Data, SIZE_T Size, SIZE_T BytesRemaining)
@@ -106,11 +113,8 @@ void UBPDeviceSubsystem::RequestServerInfo()
 		return;
 	}
 
-	//TODO make this a simple static constructor. For all messages.
-	FBPMessageRequestServerInfo Request = FBPMessageRequestServerInfo(1, "ButtplugUE", 3);
-	FBPMessagePacket Message = FBPMessagePacket();
-	Message.Messages.Add(FInstancedStruct::Make<FBPMessageRequestServerInfo>(Request));
-
+	FBPMessageRequestServerInfo Request = FBPMessageRequestServerInfo(1, UBPSettings::GetButtplugClientName(), 3);
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPMessageRequestServerInfo>(this, Request);
 	Socket->Send(Message.ToString());
 }
 
@@ -122,10 +126,7 @@ void UBPDeviceSubsystem::RequestDeviceList()
 		return;
 	}
 
-	//TODO make this a simple static constructor. For all messages.
 	FBPRequestDeivceList Request = FBPRequestDeivceList(1);
-	FBPMessagePacket Message = FBPMessagePacket();
-	Message.Messages.Add(FInstancedStruct::Make<FBPRequestDeivceList>(Request));
-
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPRequestDeivceList>(this, Request);
 	Socket->Send(Message.ToString());
 }

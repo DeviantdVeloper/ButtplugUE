@@ -504,6 +504,13 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"ServerName\": \"{ServerName}\", \"MessageVersion\": {MessageVersion}, \"MaxPingTime\": {MaxPingTime}}"), Args);
 	}
 
+	static FBPMessageServerInfo FromString(const FString& Source)
+	{
+		FBPMessageServerInfo* Out = new FBPMessageServerInfo();
+		FJsonObjectConverter::JsonObjectStringToUStruct<FBPMessageServerInfo>(Source, Out);
+		return *Out;
+	}
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -1166,13 +1173,27 @@ class BUTTPLUGUE_API UBPTypes : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+public:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
 	static FString ToString_StatusError(const FBPMessageStatusError& Target){return Target.ToString(); };
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
 	static FString ToString_StatusOk(const FBPMessageStatusOk& Target) { return Target.ToString(); };
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
 	static FString ToString_MessagePacket(const FBPMessagePacket& Target) { return Target.ToString(); };
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
+	static FString ToString_ServerInfo(const FBPMessageServerInfo& Target) { return Target.ToString(); };
 	
+	template<typename T>
+	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, T& Message);
+
+	template<typename T>
+	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, TArray<T> Message);
+
+	static TArray<FInstancedStruct> DeserializeMessage(const TOptional<UObject*> Context, const FString& Message);
+
+	static UScriptStruct* GetStructType(const FString& Name);
 };
