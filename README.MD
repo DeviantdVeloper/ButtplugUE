@@ -18,7 +18,7 @@ Buttplug UE is a plugin for the Unreal Engine that implements the [Buttplug.io](
 
 #### Unsupported
 
-- <= 5.0 (due to the use of `FInstancedStruct`)
+- <= 5.0 (due to the use of `FInstancedStruct` introduced in 5.1)
 
 ### Supported Platforms
 
