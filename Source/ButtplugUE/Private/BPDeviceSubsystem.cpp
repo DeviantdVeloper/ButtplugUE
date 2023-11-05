@@ -62,6 +62,7 @@ void UBPDeviceSubsystem::OnConnected()
 	BPLog::Message(this, "Successfully Connected to Buttplug Server at: {Server}:{Port}. Requesting Server Info Handshake.", Args);
 
 	//TODO Calling this here for now since it needs to be done to establish a viable connection.
+	OnMessageServerInfoReceived.AddDynamic(this, &UBPDeviceSubsystem::OnServerHandshake);
 	RequestServerInfo();
 }
 
@@ -76,6 +77,7 @@ void UBPDeviceSubsystem::OnConnectionError(const FString& Error)
 
 void UBPDeviceSubsystem::OnClosed(int32 StatusCode, const FString& Reason, bool bWasClean)
 {
+	ServerPingTimer.Invalidate();
 	FStringFormatNamedArguments Args;
 	Args.Add("StatusCode", StatusCode);
 	Args.Add("Reason", Reason);
@@ -126,9 +128,31 @@ void UBPDeviceSubsystem::OnMessageSent(const FString& MessageString)
 	BPLog::Message(this, "Message Sent: " + MessageString);
 }
 
-int32 UBPDeviceSubsystem::MakeMessageId() const
+int32 UBPDeviceSubsystem::MakeMessageId()
 {
-	return FMath::FRandRange((double)1, (double)INT32_MAX);
+	//As if anyone will ever reach this stage.
+	if (MessageIdCounter == INT32_MAX)
+	{
+		MessageIdCounter = 1;
+	}
+	else
+	{
+		MessageIdCounter++;
+	}
+
+	return MessageIdCounter;
+}
+
+void UBPDeviceSubsystem::OnServerHandshake(const FBPMessageServerInfo& ServerInfo)
+{
+	if (ServerInfo.MaxPingTime > 0)
+	{
+		BPLog::Message(this, "Received Max Ping Time, beginning ping loop.");
+		ServerPingTimer.Invalidate();
+		GetWorld()->GetTimerManager().SetTimer(ServerPingTimer, this, &UBPDeviceSubsystem::PingServer, ServerInfo.MaxPingTime * 1000, true);
+		PingServer();
+	}
+	OnMessageServerInfoReceived.Remove(this, FName("OnServerHandshake"));
 }
 
 int32 UBPDeviceSubsystem::RequestServerInfo()
@@ -145,6 +169,22 @@ int32 UBPDeviceSubsystem::RequestServerInfo()
 	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPMessageRequestServerInfo>(this, Request);
 	Socket->Send(Message.ToString());
 	return MessageId;
+}
+
+void UBPDeviceSubsystem::PingServer()
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		ServerPingTimer.Invalidate();
+		return;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPMessageStatusPing Request = FBPMessageStatusPing(MessageId);
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPMessageStatusPing>(this, Request);
+	Socket->Send(Message.ToString());
 }
 
 int32 UBPDeviceSubsystem::RequestDeviceList()
@@ -195,6 +235,38 @@ int32 UBPDeviceSubsystem::StopAllDevices()
 	return MessageId;
 }
 
+int32 UBPDeviceSubsystem::StartScanning()
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return -1;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPStartScanning Request = FBPStartScanning(MessageId);
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPStartScanning>(this, Request);
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
+int32 UBPDeviceSubsystem::StopScanning()
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return -1;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPStopScanning Request = FBPStopScanning(MessageId);
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPStopScanning>(this, Request);
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
 int32 UBPDeviceSubsystem::SendScalarCommand(const FBPScalarCommand& Command)
 {
 	if (!IsConnected())
@@ -208,6 +280,91 @@ int32 UBPDeviceSubsystem::SendScalarCommand(const FBPScalarCommand& Command)
 	FBPScalarCommand Request = Command;
 	Request.Id = MessageId;
 	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPScalarCommand>(this, Request);
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
+int32 UBPDeviceSubsystem::SendLinearCommand(const FBPLinearCommand& Command)
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return -1;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPLinearCommand Request = Command;
+	Request.Id = MessageId;
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPLinearCommand>(this, Request);
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
+int32 UBPDeviceSubsystem::SendRotateCommand(const FBPRotateCommand& Command)
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return -1;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPRotateCommand Request = Command;
+	Request.Id = MessageId;
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPRotateCommand>(this, Request);
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
+int32 UBPDeviceSubsystem::SendSensorReadCommand(const FBPSensorReadCommand& Command)
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return -1;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPSensorReadCommand Request = Command;
+	Request.Id = MessageId;
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPSensorReadCommand>(this, Request);
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
+int32 UBPDeviceSubsystem::SubscribeToSensor(const FBPSensorSubscribeCommand& Command)
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return -1;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPSensorSubscribeCommand Request = Command;
+	Request.Id = MessageId;
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPSensorSubscribeCommand>(this, Request);
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
+int32 UBPDeviceSubsystem::UnsubscribeFromSensor(const FBPSensorUnsubscribeCommand& Command)
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return -1;
+	}
+
+	int32 MessageId = MakeMessageId();
+
+	FBPSensorUnsubscribeCommand Request = Command;
+	Request.Id = MessageId;
+	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPSensorUnsubscribeCommand>(this, Request);
 	Socket->Send(Message.ToString());
 	return MessageId;
 }

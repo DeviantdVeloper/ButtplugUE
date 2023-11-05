@@ -103,12 +103,27 @@ private:
 	void OnRawMessage(const void* Data, SIZE_T Size, SIZE_T BytesRemaining);
 	void OnMessageSent(const FString& MessageString);
 
-	int32 MakeMessageId() const;
+	//We are storing and iterating the message Id.
+	//Could use a random int each time, but this way in the case of a bug report
+	//we can see how many messages have been sent, which might tie to how long the
+	//instance has been running. Just another data point which might be of use.
+	UPROPERTY()
+	int32 MessageIdCounter;
+	int32 MakeMessageId();
+
+	UFUNCTION()
+	void OnServerHandshake(const FBPMessageServerInfo& ServerInfo);
+
+	UPROPERTY()
+	FTimerHandle ServerPingTimer;
 
 public:
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
 	int32 RequestServerInfo();
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	void PingServer();
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
 	int32 RequestDeviceList();
@@ -120,6 +135,27 @@ public:
 	int32 StopAllDevices();
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	int32 StartScanning();
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	int32 StopScanning();
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
 	int32 SendScalarCommand(const FBPScalarCommand& Command);
-	
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	int32 SendLinearCommand(const FBPLinearCommand& Command);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	int32 SendRotateCommand(const FBPRotateCommand& Command);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	int32 SendSensorReadCommand(const FBPSensorReadCommand& Command);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	int32 SubscribeToSensor(const FBPSensorSubscribeCommand& Command);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	int32 UnsubscribeFromSensor(const FBPSensorUnsubscribeCommand& Command);
+
 };
