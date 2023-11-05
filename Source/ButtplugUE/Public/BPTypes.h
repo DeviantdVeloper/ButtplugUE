@@ -11,6 +11,15 @@
 
 #include "BPTypes.generated.h"
 
+UENUM(Blueprintable, BlueprintType)
+enum class EBPLogVerbosity : uint8
+{
+	NoLogging = 0x00,
+	Errors = 0x01,
+	Warnings = 0x02,
+	All = 0x03
+};
+
 UENUM(BlueprintType)
 enum class EBPErrorCode : uint8
 {

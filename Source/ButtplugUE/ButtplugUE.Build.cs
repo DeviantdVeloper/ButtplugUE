@@ -28,7 +28,9 @@ public class ButtplugUE : ModuleRules
 				"Core",
                 "Json",
 				"JsonUtilities",
-                "StructUtils"
+                "StructUtils",
+                "DeveloperSettings",
+				"WebSockets"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
