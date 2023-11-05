@@ -3,13 +3,13 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "ButtplugUE",
-	"Description": "",
+	"Description": "An Unreal Engine integration for the Buttplug.io framework.",
 	"Category": "Other",
 	"CreatedBy": "d/Dev",
-	"CreatedByURL": "",
+	"CreatedByURL": "https://github.com/DeviantdVeloper",
 	"DocsURL": "",
 	"MarketplaceURL": "",
-	"SupportURL": "",
+	"SupportURL": "https://github.com/DeviantdVeloper/ButtplugUE",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -25,10 +25,6 @@
 		{
 			"Name": "StructUtils",
 			"Enabled": true
-		},
-		{
-			"Name": "ClangTidy",
-			"Enabled": false
 		}
 	]
 }
