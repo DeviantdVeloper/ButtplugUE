@@ -375,6 +375,8 @@ public:
 		Id = InId;
 	}
 
+	virtual ~FBPMessageBase() = default;
+
 	virtual FString ToString() const
 	{
 		return "{BaseType}";
@@ -449,6 +451,8 @@ public:
 		Id = InId;
 	}
 
+	virtual ~FBPMessageStatusOk() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -499,6 +503,8 @@ public:
 		ErrorCode = InErrorCode;
 	}
 
+	virtual ~FBPMessageStatusError() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -533,6 +539,8 @@ public:
 		MessageTitle = "Ping";
 		Id = InId;
 	}
+
+	virtual ~FBPMessageStatusPing() = default;
 
 	virtual FString ToString() const override
 	{
@@ -571,6 +579,8 @@ public:
 		ClientName = InClientName;
 		MessageVersion = InMessageVersion;
 	}
+
+	virtual ~FBPMessageRequestServerInfo() = default;
 
 	virtual FString ToString() const override
 	{
@@ -622,6 +632,8 @@ public:
 		MaxPingTime = InMaxPingTime;
 	}
 
+	virtual ~FBPMessageServerInfo() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -665,6 +677,8 @@ public:
 		Id = InId;
 	}
 
+	virtual ~FBPStartScanning() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -691,6 +705,8 @@ public:
 		MessageTitle = "StopScanning";
 		Id = InId;
 	}
+
+	virtual ~FBPStopScanning() = default;
 
 	virtual FString ToString() const override
 	{
@@ -719,6 +735,8 @@ public:
 		Id = InId;
 	}
 
+	virtual ~FBPScanningFinished() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -745,6 +763,8 @@ public:
 		MessageTitle = "RequestDeviceList";
 		Id = InId;
 	}
+
+	virtual ~FBPRequestDeviceList() = default;
 
 	virtual FString ToString() const override
 	{
@@ -777,6 +797,8 @@ public:
 		Id = InId;
 		Devices = InDevices;
 	}
+
+	virtual ~FBPDeviceList() = default;
 
 	virtual FString ToString() const override
 	{
@@ -837,6 +859,8 @@ public:
 		Device = InDevice;
 	}
 
+	virtual ~FBPDeviceAdded() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -869,6 +893,8 @@ public:
 		Id = InId;
 		DeviceIndex = InDeviceIndex;
 	}
+
+	virtual ~FBPDeviceRemove() = default;
 
 	virtual FString ToString() const override
 	{
@@ -903,6 +929,8 @@ public:
 		DeviceIndex = InDeviceIndex;
 	}
 
+	virtual ~FBPStopDeviceCmd() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -930,6 +958,8 @@ public:
 		MessageTitle = "StopAllDevices";
 		Id = InId;
 	}
+
+	virtual ~FBPStopAllDevices() = default;
 
 	virtual FString ToString() const override
 	{
@@ -967,6 +997,8 @@ public:
 		DeviceIndex = InDeviceIndex;
 		Scalars = InScalars;
 	}
+
+	virtual ~FBPScalarCommand() = default;
 
 	virtual FString ToString() const override
 	{
@@ -1020,6 +1052,8 @@ public:
 		Vectors = InVectors;
 	}
 
+	virtual ~FBPLinearCommand() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -1071,6 +1105,8 @@ public:
 		DeviceIndex = InDeviceIndex;
 		Rotations = InRotations;
 	}
+
+	virtual ~FBPRotateCommand() = default;
 
 	virtual FString ToString() const override
 	{
@@ -1129,6 +1165,8 @@ public:
 		SensorType = InSensorType;
 	}
 
+	virtual ~FBPSensorMessageBase() = default;
+
 	virtual FString ToString() const override
 	{
 		FStringFormatNamedArguments Args;
@@ -1165,6 +1203,9 @@ public:
 		SensorIndex = InSensorIndex;
 		SensorType = InSensorType;
 	}
+
+	virtual ~FBPSensorReadCommand() = default;
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -1196,6 +1237,8 @@ public:
 		SensorType = InSensorType;
 		Data = InData;
 	}
+
+	virtual ~FBPSensorReading() = default;
 
 	virtual FString ToString() const override
 	{
@@ -1244,6 +1287,9 @@ public:
 		SensorIndex = InSensorIndex;
 		SensorType = InSensorType;
 	}
+
+	virtual ~FBPSensorSubscribeCommand() = default;
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -1270,6 +1316,9 @@ public:
 		SensorIndex = InSensorIndex;
 		SensorType = InSensorType;
 	}
+
+	virtual ~FBPSensorUnsubscribeCommand() = default;
+
 };
 
 /**
