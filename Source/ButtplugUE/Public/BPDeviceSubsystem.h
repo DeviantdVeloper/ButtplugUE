@@ -33,6 +33,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBPSensorReadingDelegate, const FBPS
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBPSensorSubscribeCmdDelegate, const FBPSensorSubscribeCommand&, Struct);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBPSensorUnsubscribeCmdDelegate, const FBPSensorUnsubscribeCommand&, Struct);
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FBPInstancedResponseDelegate, const FInstancedStruct&, Struct);
+
 /**
  * 
  */
@@ -96,12 +98,8 @@ private:
 	TSharedPtr<IWebSocket> Socket;
 	bool IsConnected() const;
 
-	void OnConnected();
-	void OnConnectionError(const FString& Error);
-	void OnClosed(int32 StatusCode, const FString& Reason, bool bWasClean);
-	void OnMessage(const FString& Message);
-	void OnRawMessage(const void* Data, SIZE_T Size, SIZE_T BytesRemaining);
-	void OnMessageSent(const FString& MessageString);
+	UPROPERTY()
+	TMap<int32, FBPInstancedResponseDelegate> ResponseDelegates;
 
 	//We are storing and iterating the message Id.
 	//Could use a random int each time, but this way in the case of a bug report
@@ -111,11 +109,21 @@ private:
 	int32 MessageIdCounter;
 	int32 MakeMessageId();
 
+	UPROPERTY()
+	FTimerHandle ServerPingTimer;
+
+	void OnConnected();
+	void OnConnectionError(const FString& Error);
+	void OnClosed(int32 StatusCode, const FString& Reason, bool bWasClean);
+	void OnMessage(const FString& Message);
+	void OnRawMessage(const void* Data, SIZE_T Size, SIZE_T BytesRemaining);
+	void OnMessageSent(const FString& MessageString);
+
 	UFUNCTION()
 	void OnServerHandshake(const FBPMessageServerInfo& ServerInfo);
 
-	UPROPERTY()
-	FTimerHandle ServerPingTimer;
+	template<typename T, typename... TArgs>
+	int32 PackAndSendMessage(TOptional<FBPInstancedResponseDelegate> ResponseDelegate, TArgs&&... InArgs);
 
 public:
 
@@ -126,36 +134,36 @@ public:
 	void PingServer();
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 RequestDeviceList();
+	int32 RequestDeviceList(FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 StopDevice(const int32 DeviceIndex);
+	int32 StopDevice(const FBPDeviceObject& Device, FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 StopAllDevices();
+	int32 StopAllDevices(FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 StartScanning();
+	int32 StartScanning(FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 StopScanning();
+	int32 StopScanning(FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 SendScalarCommand(const FBPScalarCommand& Command);
+	int32 SendScalarCommand(const FBPScalarCommand& Command, FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 SendLinearCommand(const FBPLinearCommand& Command);
+	int32 SendLinearCommand(const FBPLinearCommand& Command, FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 SendRotateCommand(const FBPRotateCommand& Command);
+	int32 SendRotateCommand(const FBPRotateCommand& Command, FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 SendSensorReadCommand(const FBPSensorReadCommand& Command);
+	int32 SendSensorReadCommand(const FBPSensorReadCommand& Command, FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 SubscribeToSensor(const FBPSensorSubscribeCommand& Command);
+	int32 SubscribeToSensor(const FBPSensorSubscribeCommand& Command, FBPInstancedResponseDelegate Response);
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 UnsubscribeFromSensor(const FBPSensorUnsubscribeCommand& Command);
+	int32 UnsubscribeFromSensor(const FBPSensorUnsubscribeCommand& Command, FBPInstancedResponseDelegate Response);
 
 };

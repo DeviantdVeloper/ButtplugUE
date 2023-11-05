@@ -42,7 +42,7 @@ void UBPDeviceSubsystem::Deinitialize()
 {
 	if (IsConnected())
 	{
-		//TODO consider sending a StopAllDevices message here.
+		StopAllDevices(FBPInstancedResponseDelegate());
 		Socket->Close();
 	}
 
@@ -116,6 +116,12 @@ void UBPDeviceSubsystem::OnMessage(const FString& Message)
 		else if (Msg.GetScriptStruct() == FBPSensorReading::StaticStruct()) { OnSensorReadingReceived.Broadcast(Msg.Get<FBPSensorReading>()); }
 		else if (Msg.GetScriptStruct() == FBPSensorSubscribeCommand::StaticStruct()) { OnSensorSubscribeCommandReceived.Broadcast(Msg.Get<FBPSensorSubscribeCommand>()); }
 		else if (Msg.GetScriptStruct() == FBPSensorUnsubscribeCommand::StaticStruct()) { OnSensorUnsubscribeCommandReceived.Broadcast(Msg.Get<FBPSensorUnsubscribeCommand>()); }
+
+		if (ResponseDelegates.Contains(Msg.GetPtr<FBPMessageBase>()->GetId()))
+		{
+			ResponseDelegates.Find(Msg.GetPtr<FBPMessageBase>()->GetId())->ExecuteIfBound(Msg);
+			ResponseDelegates.Remove(Msg.GetPtr<FBPMessageBase>()->GetId());
+		}
 	}
 }
 
@@ -155,6 +161,22 @@ void UBPDeviceSubsystem::OnServerHandshake(const FBPMessageServerInfo& ServerInf
 	OnMessageServerInfoReceived.Remove(this, FName("OnServerHandshake"));
 }
 
+template<typename T, typename ...TArgs>
+int32 UBPDeviceSubsystem::PackAndSendMessage(TOptional<FBPInstancedResponseDelegate> ResponseDelegate, TArgs && ...InArgs)
+{
+	int32 MessageId = MakeMessageId();
+	FInstancedStruct RequestInstance = FInstancedStruct::Make<T>(MessageId, Forward<TArgs>(InArgs)...);
+	T Request = RequestInstance.GetMutable<T>();
+	FBPMessagePacket Message = UBPTypes::PackageMessage<T>(this, Request);
+	if (ResponseDelegate.IsSet())
+	{
+		ResponseDelegates.Add(MessageId, ResponseDelegate.GetValue());
+	}
+	Socket->Send(Message.ToString());
+	return MessageId;
+}
+
+
 int32 UBPDeviceSubsystem::RequestServerInfo()
 {
 	if (!IsConnected())
@@ -162,13 +184,7 @@ int32 UBPDeviceSubsystem::RequestServerInfo()
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPMessageRequestServerInfo Request = FBPMessageRequestServerInfo(MessageId, UButtplugUESettings::GetButtplugClientName(), 3);
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPMessageRequestServerInfo>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPMessageRequestServerInfo>(TOptional<FBPInstancedResponseDelegate>(), UButtplugUESettings::GetButtplugClientName(), 3);
 }
 
 void UBPDeviceSubsystem::PingServer()
@@ -179,192 +195,115 @@ void UBPDeviceSubsystem::PingServer()
 		ServerPingTimer.Invalidate();
 		return;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPMessageStatusPing Request = FBPMessageStatusPing(MessageId);
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPMessageStatusPing>(this, Request);
-	Socket->Send(Message.ToString());
+	PackAndSendMessage<FBPMessageStatusPing>(TOptional<FBPInstancedResponseDelegate>());
 }
 
-int32 UBPDeviceSubsystem::RequestDeviceList()
+int32 UBPDeviceSubsystem::RequestDeviceList(FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPRequestDeviceList Request = FBPRequestDeviceList(MessageId);
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPRequestDeviceList>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPRequestDeviceList>(Response);
 }
 
-int32 UBPDeviceSubsystem::StopDevice(const int32 DeviceIndex)
+int32 UBPDeviceSubsystem::StopDevice(const FBPDeviceObject& Device, FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPStopDeviceCmd Request = FBPStopDeviceCmd(MessageId, DeviceIndex);
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPStopDeviceCmd>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPStopDeviceCmd>(Response, Device.DeviceIndex);
 }
 
-int32 UBPDeviceSubsystem::StopAllDevices()
+int32 UBPDeviceSubsystem::StopAllDevices(FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPStopAllDevices Request = FBPStopAllDevices(MessageId);
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPStopAllDevices>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPStopAllDevices>(Response);
 }
 
-int32 UBPDeviceSubsystem::StartScanning()
+int32 UBPDeviceSubsystem::StartScanning(FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPStartScanning Request = FBPStartScanning(MessageId);
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPStartScanning>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPStartScanning>(Response);
 }
 
-int32 UBPDeviceSubsystem::StopScanning()
+int32 UBPDeviceSubsystem::StopScanning(FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPStopScanning Request = FBPStopScanning(MessageId);
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPStopScanning>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPStopScanning>(Response);
 }
 
-int32 UBPDeviceSubsystem::SendScalarCommand(const FBPScalarCommand& Command)
+int32 UBPDeviceSubsystem::SendScalarCommand(const FBPScalarCommand& Command, FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPScalarCommand Request = Command;
-	Request.Id = MessageId;
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPScalarCommand>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPScalarCommand>(Response, Command.DeviceIndex, Command.Scalars);
 }
 
-int32 UBPDeviceSubsystem::SendLinearCommand(const FBPLinearCommand& Command)
+int32 UBPDeviceSubsystem::SendLinearCommand(const FBPLinearCommand& Command, FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPLinearCommand Request = Command;
-	Request.Id = MessageId;
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPLinearCommand>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPLinearCommand>(Response, Command.DeviceIndex, Command.Vectors);
 }
 
-int32 UBPDeviceSubsystem::SendRotateCommand(const FBPRotateCommand& Command)
+int32 UBPDeviceSubsystem::SendRotateCommand(const FBPRotateCommand& Command, FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPRotateCommand Request = Command;
-	Request.Id = MessageId;
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPRotateCommand>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPRotateCommand>(Response, Command.DeviceIndex, Command.Rotations);
 }
 
-int32 UBPDeviceSubsystem::SendSensorReadCommand(const FBPSensorReadCommand& Command)
+int32 UBPDeviceSubsystem::SendSensorReadCommand(const FBPSensorReadCommand& Command, FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPSensorReadCommand Request = Command;
-	Request.Id = MessageId;
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPSensorReadCommand>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPSensorReadCommand>(Response, Command.DeviceIndex, Command.SensorIndex, Command.SensorType);
 }
 
-int32 UBPDeviceSubsystem::SubscribeToSensor(const FBPSensorSubscribeCommand& Command)
+int32 UBPDeviceSubsystem::SubscribeToSensor(const FBPSensorSubscribeCommand& Command, FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPSensorSubscribeCommand Request = Command;
-	Request.Id = MessageId;
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPSensorSubscribeCommand>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPSensorSubscribeCommand>(Response, Command.DeviceIndex, Command.SensorIndex, Command.SensorType);
 }
 
-int32 UBPDeviceSubsystem::UnsubscribeFromSensor(const FBPSensorUnsubscribeCommand& Command)
+int32 UBPDeviceSubsystem::UnsubscribeFromSensor(const FBPSensorUnsubscribeCommand& Command, FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-
-	int32 MessageId = MakeMessageId();
-
-	FBPSensorUnsubscribeCommand Request = Command;
-	Request.Id = MessageId;
-	FBPMessagePacket Message = UBPTypes::PackageMessage<FBPSensorUnsubscribeCommand>(this, Request);
-	Socket->Send(Message.ToString());
-	return MessageId;
+	return PackAndSendMessage<FBPSensorUnsubscribeCommand>(Response, Command.DeviceIndex, Command.SensorIndex, Command.SensorType);
 }
