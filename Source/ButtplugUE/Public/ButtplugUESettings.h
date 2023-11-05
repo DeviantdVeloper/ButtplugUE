@@ -11,7 +11,7 @@
 /**
  * 
  */
-UCLASS(Config = ButtplugUE)
+UCLASS(Config = Game, meta = (DisplayName = "ButtplugUE Settings"))
 class BUTTPLUGUE_API UButtplugUESettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
@@ -32,6 +32,9 @@ public:
 	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Name to provide to Intiface upon connection, good for identifying your game to users."))
 		FString ClientName = "ButtplugUE";
 
+	UPROPERTY(Config, EditAnywhere, meta = (AdvancedDisplay, ToolTip = "Whether the subsystem should automatically try to connect to Intiface during initialization. If this is set to false you will need to connect manually via 'Connect' on the BPDeviceSubsystem."))
+		bool bAutoConnect = true;
+
 	static EBPLogVerbosity GetLoggingVerbosity();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Settings"))
@@ -42,5 +45,17 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Settings"))
 		static FString GetButtplugClientName();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Settings"))
+		static bool GetAutoConnect();
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Settings"))
+		static void SetButtplugServer(const FString InServer);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Settings"))
+		static void SetButtplugPort(const int32 InPort);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Settings"))
+		static void SetButtplugClientName(const FString InClientName);
 
 };

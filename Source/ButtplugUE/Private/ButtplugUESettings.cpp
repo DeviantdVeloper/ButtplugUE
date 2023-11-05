@@ -4,6 +4,7 @@
 #include "ButtplugUESettings.h"
 
 UButtplugUESettings::UButtplugUESettings()
+	:Super()
 {
 	CategoryName = "Plugins";
 }
@@ -26,4 +27,24 @@ int32 UButtplugUESettings::GetButtplugPort()
 FString UButtplugUESettings::GetButtplugClientName()
 {
 	return GetMutableDefault<UButtplugUESettings>()->ClientName;
+}
+
+bool UButtplugUESettings::GetAutoConnect()
+{
+	return GetMutableDefault<UButtplugUESettings>()->bAutoConnect;
+}
+
+void UButtplugUESettings::SetButtplugServer(const FString InServer)
+{
+	GetMutableDefault<UButtplugUESettings>()->Server = InServer;
+}
+
+void UButtplugUESettings::SetButtplugPort(const int32 InPort)
+{
+	GetMutableDefault<UButtplugUESettings>()->Port = InPort;
+}
+
+void UButtplugUESettings::SetButtplugClientName(const FString InClientName)
+{
+	GetMutableDefault<UButtplugUESettings>()->ClientName = InClientName;
 }

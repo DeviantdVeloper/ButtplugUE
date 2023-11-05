@@ -35,6 +35,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBPSensorUnsubscribeCmdDelegate, con
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FBPInstancedResponseDelegate, const FInstancedStruct&, Struct);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBPBasicDelegate);
+
 /**
  * 
  */
@@ -89,6 +91,8 @@ public:
 	FBPSensorSubscribeCmdDelegate OnSensorSubscribeCommandReceived;
 	UPROPERTY(BlueprintAssignable)
 	FBPSensorUnsubscribeCmdDelegate OnSensorUnsubscribeCommandReceived;
+	UPROPERTY(BlueprintAssignable)
+	FBPBasicDelegate OnServerDisconnect;
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
@@ -96,7 +100,6 @@ public:
 private:
 
 	TSharedPtr<IWebSocket> Socket;
-	bool IsConnected() const;
 
 	UPROPERTY()
 	TMap<int32, FBPInstancedResponseDelegate> ResponseDelegates;
@@ -126,6 +129,15 @@ private:
 	int32 PackAndSendMessage(TOptional<FBPInstancedResponseDelegate> ResponseDelegate, TArgs&&... InArgs);
 
 public:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Devices"))
+	bool IsConnected() const;
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	void Connect();
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	void Disconnect();
 
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
 	int32 RequestServerInfo();

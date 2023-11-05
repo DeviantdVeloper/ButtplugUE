@@ -808,7 +808,6 @@ public:
 
 	virtual int32 GetId() const override
 	{
-		BPLog::Message(nullptr, "CHILD CALL: " + FString::FromInt(Id));
 		return Id;
 	}
 

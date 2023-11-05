@@ -28,9 +28,11 @@ void UBPDeviceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		Socket->OnRawMessage().AddUObject(this, &UBPDeviceSubsystem::OnRawMessage);
 		Socket->OnMessageSent().AddUObject(this, &UBPDeviceSubsystem::OnMessageSent);
 
-		BPLog::Message(this, "Attempting to Connect to Buttplug Server at: " + Server);
-
-		Socket->Connect();
+		if(UButtplugUESettings::GetAutoConnect())
+		{
+			BPLog::Message(this, "Attempting to Connect to Buttplug Server at: " + Server);
+			Socket->Connect();
+		}
 	}
 	else
 	{
@@ -42,8 +44,7 @@ void UBPDeviceSubsystem::Deinitialize()
 {
 	if (IsConnected())
 	{
-		StopAllDevices(FBPInstancedResponseDelegate());
-		Socket->Close();
+		Disconnect();
 	}
 
 	Super::Deinitialize();
@@ -82,7 +83,8 @@ void UBPDeviceSubsystem::OnClosed(int32 StatusCode, const FString& Reason, bool 
 	Args.Add("StatusCode", StatusCode);
 	Args.Add("Reason", Reason);
 	Args.Add("WasClean", bWasClean);
-	BPLog::Warning(this, "Connection to Buttplug Server Closed! Code: {StatusCode}, Reason: {Reason}, WasClean: {WasClean}", Args);
+	BPLog::Message(this, "Connection to Buttplug Server Closed! Code: {StatusCode}, Reason: {Reason}, WasClean: {WasClean}", Args);
+	OnServerDisconnect.Broadcast();
 }
 
 void UBPDeviceSubsystem::OnMessage(const FString& Message)
@@ -176,6 +178,52 @@ int32 UBPDeviceSubsystem::PackAndSendMessage(TOptional<FBPInstancedResponseDeleg
 	return MessageId;
 }
 
+
+void UBPDeviceSubsystem::Connect()
+{
+	if (IsConnected())
+	{
+		BPLog::Warning(this, "Tried to connect to server but we are already connected! Treating as reconnect.");
+		Disconnect();
+	}
+
+	FStringFormatNamedArguments Args;
+	Args.Add("Server", UButtplugUESettings::GetButtplugServer());
+	Args.Add("Port", UButtplugUESettings::GetButtplugPort());
+	FString Server = FString::Format(TEXT("{Server}:{Port}"), Args);
+
+	Socket = FWebSocketsModule::Get().CreateWebSocket(Server, "ws");
+	
+	if (Socket.IsValid())
+	{
+		Socket->OnConnected().AddUObject(this, &UBPDeviceSubsystem::OnConnected);
+		Socket->OnConnectionError().AddUObject(this, &UBPDeviceSubsystem::OnConnectionError);
+		Socket->OnClosed().AddUObject(this, &UBPDeviceSubsystem::OnClosed);
+		Socket->OnMessage().AddUObject(this, &UBPDeviceSubsystem::OnMessage);
+		Socket->OnRawMessage().AddUObject(this, &UBPDeviceSubsystem::OnRawMessage);
+		Socket->OnMessageSent().AddUObject(this, &UBPDeviceSubsystem::OnMessageSent);
+
+		BPLog::Message(this, "Attempting to Connect to Buttplug Server at: " + Server);
+		Socket->Connect();
+	}
+	else
+	{
+		BPLog::Error(this, "Failed to Create Socket for Buttplug Server at: {Server}!", Args);
+	}
+}
+
+void UBPDeviceSubsystem::Disconnect()
+{
+	if (!IsConnected())
+	{
+		BPLog::Warning(this, "Tried to disconnect from server, but we were already disconnected.");
+		return;
+	}
+	StopAllDevices(FBPInstancedResponseDelegate());
+	BPLog::Message(this, "Disconnecting from Buttplug Server.");
+	Socket->Close();
+	Socket.Reset();
+}
 
 int32 UBPDeviceSubsystem::RequestServerInfo()
 {
