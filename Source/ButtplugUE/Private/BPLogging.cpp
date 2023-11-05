@@ -2,9 +2,9 @@
 
 #include "BPLogging.h"
 
-#include "BPSettings.h"
+#include "ButtplugUESettings.h"
 
-DEFINE_LOG_CATEGORY(LogBP);
+DEFINE_LOG_CATEGORY(LogButtplugUE);
 
 void UBPLogging::Message(UObject* Context, const FString Message, bool bLogOnScreen, FLinearColor Color)
 {
@@ -25,15 +25,15 @@ void BPLog::Message(const TOptional<UObject*> Context, const FString Message, FS
 {
 	FString Log = BPLog::GetFormattedLog(Message, Args);
 	UObject* ContextPtr = *Context.GetPtrOrNull();
-	if (UBPSettings::GetLoggingVerbosity() == EBPLogVerbosity::All)
+	if (UButtplugUESettings::GetLoggingVerbosity() == EBPLogVerbosity::All)
 	{
 		if(ContextPtr != nullptr)
 		{
-			UE_LOG(LogBP, Display, TEXT("%s: %s"), *ContextPtr->GetName(), *Log);
+			UE_LOG(LogButtplugUE, Display, TEXT("%s: %s"), *ContextPtr->GetName(), *Log);
 		}
 		else
 		{
-			UE_LOG(LogBP, Display, TEXT("%s"), *Log);
+			UE_LOG(LogButtplugUE, Display, TEXT("%s"), *Log);
 		}
 
 		if (bLogOnScreen)
@@ -47,15 +47,15 @@ void BPLog::Warning(const TOptional<UObject*> Context, const FString Message, FS
 {
 	FString Log = BPLog::GetFormattedLog(Message, Args);
 	UObject* ContextPtr = *Context.GetPtrOrNull();
-	if (UBPSettings::GetLoggingVerbosity() >= EBPLogVerbosity::Warnings)
+	if (UButtplugUESettings::GetLoggingVerbosity() >= EBPLogVerbosity::Warnings)
 	{
 		if (ContextPtr != nullptr)
 		{
-			UE_LOG(LogBP, Warning, TEXT("%s: %s"), *ContextPtr->GetName(), *Log);
+			UE_LOG(LogButtplugUE, Warning, TEXT("%s: %s"), *ContextPtr->GetName(), *Log);
 		}
 		else
 		{
-			UE_LOG(LogBP, Warning, TEXT("%s"), *Log);
+			UE_LOG(LogButtplugUE, Warning, TEXT("%s"), *Log);
 		}
 
 		if (bLogOnScreen)
@@ -69,15 +69,15 @@ void BPLog::Error(const TOptional<UObject*> Context, const FString Message, FStr
 {
 	FString Log = BPLog::GetFormattedLog(Message, Args);
 	UObject* ContextPtr = *Context.GetPtrOrNull();
-	if (UBPSettings::GetLoggingVerbosity() >= EBPLogVerbosity::Errors)
+	if (UButtplugUESettings::GetLoggingVerbosity() >= EBPLogVerbosity::Errors)
 	{
 		if (ContextPtr != nullptr)
 		{
-			UE_LOG(LogBP, Error, TEXT("%s: %s"), *ContextPtr->GetName(), *Log);
+			UE_LOG(LogButtplugUE, Error, TEXT("%s: %s"), *ContextPtr->GetName(), *Log);
 		}
 		else
 		{
-			UE_LOG(LogBP, Error, TEXT("%s"), *Log);
+			UE_LOG(LogButtplugUE, Error, TEXT("%s"), *Log);
 		}
 
 		if (bLogOnScreen)

@@ -9,7 +9,7 @@
 
 #include "BPLogging.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogBP, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogButtplugUE, Log, All);
 
 namespace BPLog
 {

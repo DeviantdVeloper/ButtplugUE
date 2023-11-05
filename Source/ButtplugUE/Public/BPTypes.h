@@ -9,6 +9,8 @@
 #include "JsonObjectConverter.h"
 #include "Engine/DataTable.h"
 
+#include "BPlogging.h"
+
 #include "BPTypes.generated.h"
 
 UENUM(Blueprintable, BlueprintType)
@@ -32,6 +34,139 @@ enum class EBPErrorCode : uint8
 };
 
 USTRUCT(Blueprintable, BlueprintType)
+struct FBPCommandMessage : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 StepCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FeatureDescriptor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ActuatorType;
+
+	FBPCommandMessage()
+	{
+		StepCount = -1;
+		FeatureDescriptor = "None";
+		ActuatorType = "None";
+	}
+
+	FBPCommandMessage(int32 InStepCount, FString InFeatureDescriptor, FString InActuator)
+	{
+		StepCount = InStepCount;
+		FeatureDescriptor = InFeatureDescriptor;
+		ActuatorType = InActuator;
+	}
+
+	FString ToString() const
+	{
+		FStringFormatNamedArguments Args;
+		Args.Add(TEXT("StepCount"), StepCount);
+		Args.Add(TEXT("FeatureDescriptor"), FeatureDescriptor);
+		Args.Add(TEXT("ActuatorType"), ActuatorType);
+		return FString::Format(TEXT("{\"StepCount\": {StepCount}, \"FeatureDescriptor\": {FeatureDescriptor}, \"ActuatorType\": \"{ActuatorType}\"}"), Args);
+	}
+	
+};
+
+USTRUCT(Blueprintable, BlueprintType)
+struct FBPStopDeviceCommand
+{
+	GENERATED_BODY()
+
+public:
+
+	FBPStopDeviceCommand()
+	{}
+};
+
+USTRUCT(Blueprintable, BlueprintType)
+struct FBPDeviceMessages
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FBPCommandMessage> ScalarCmd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FBPCommandMessage> LinearCmd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FBPCommandMessage> RotateCmd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FBPStopDeviceCommand StopDeviceCmd;
+
+	FBPDeviceMessages()
+	{
+		ScalarCmd = TArray<FBPCommandMessage>();
+		LinearCmd = TArray<FBPCommandMessage>();
+		RotateCmd = TArray<FBPCommandMessage>();
+		StopDeviceCmd = FBPStopDeviceCommand();
+	}
+
+	FBPDeviceMessages(TArray<FBPCommandMessage> InScalarCmd, TArray<FBPCommandMessage> InLinearCmd, TArray<FBPCommandMessage> InRotateCmd)
+	{
+		ScalarCmd = InScalarCmd;
+		LinearCmd = InLinearCmd;
+		RotateCmd = InRotateCmd;
+		StopDeviceCmd = FBPStopDeviceCommand();
+	}
+
+	FString ToString() const
+	{
+		FStringFormatNamedArguments Args;
+
+		FString ScalarCmds = "[";
+		for (int i = 0; i < ScalarCmd.Num(); i++)
+		{
+			ScalarCmds += ScalarCmd[i].ToString();
+			if (i != ScalarCmd.Num() - 1)
+			{
+				ScalarCmds += ",";
+			}
+		}
+		ScalarCmds += "]";
+
+		FString LinearCmds = "[";
+		for (int i = 0; i < LinearCmd.Num(); i++)
+		{
+			LinearCmds += LinearCmd[i].ToString();
+			if (i != LinearCmd.Num() - 1)
+			{
+				LinearCmds += ",";
+			}
+		}
+		LinearCmds += "]";
+
+		FString RotateCmds = "[";
+		for (int i = 0; i < RotateCmd.Num(); i++)
+		{
+			RotateCmds += RotateCmd[i].ToString();
+			if (i != RotateCmd.Num() - 1)
+			{
+				RotateCmds += ",";
+			}
+		}
+		RotateCmds += "]";
+
+		Args.Add(TEXT("ScalarCmds"), ScalarCmds);
+		Args.Add(TEXT("LinearCmds"), LinearCmds);
+		Args.Add(TEXT("RotateCmds"), RotateCmds);
+
+		return FString::Format(TEXT("{\"ScalarCmd\":{ScalarCmds},\"LinearCmd\":{LinearCmds},\"RotateCmd\":{RotateCmds},\"StopDeviceCmd\":{}}"), Args);
+	}
+
+};
+
+USTRUCT(Blueprintable, BlueprintType)
 struct FBPDeviceObject : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -50,10 +185,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString DeviceDisplayName;
 
-	//This is much more complex in reality
-	///https://buttplug-developer-guide.docs.buttplug.io/docs/spec/enumeration/#message-attributes-for-devicelist-and-deviceadded
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TMap<FString, FString> DeviceMessages;
+	FBPDeviceMessages DeviceMessages;
 
 	FBPDeviceObject()
 	{
@@ -61,10 +194,14 @@ public:
 		DeviceIndex = -1;
 		DeviceMessageTimingGap = -1;
 		DeviceDisplayName = "None";
-		DeviceMessages = TMap<FString, FString>();
+		DeviceMessages = FBPDeviceMessages();
 	}
 
-	FBPDeviceObject(FString InDeviceName, int32 InDeviceIndex, int32 InDeviceMessageTimingGap, FString InDeviceDisplayName, TMap<FString, FString> InDeviceMessages)
+	FBPDeviceObject(FString InDeviceName,
+					int32 InDeviceIndex,
+					int32 InDeviceMessageTimingGap,
+					FString InDeviceDisplayName,
+					FBPDeviceMessages InDeviceMessages)
 	{
 		DeviceName = InDeviceName;
 		DeviceIndex = InDeviceIndex;
@@ -80,27 +217,16 @@ public:
 		Args.Add(TEXT("DeviceIndex"), DeviceIndex);
 		Args.Add(TEXT("DeviceMessageTimingGap"), DeviceMessageTimingGap);
 		Args.Add(TEXT("DeviceDisplayName"), DeviceDisplayName);
+		Args.Add(TEXT("DeviceMessages"), DeviceMessages.ToString());
 
-		FString MessagesString = "{";
-		TArray<FString> Keys;
-		DeviceMessages.GetKeys(Keys);
-		for (int i = 0; i < Keys.Num(); i++)
-		{
-			MessagesString += "\"" + Keys[i] + "\"[";
-			MessagesString += DeviceMessages[Keys[i]];
-			if (i != Keys.Num() - 1)
-			{
-				MessagesString += ",";
-			}
-			else
-			{
-				MessagesString += "]";
-			}
-		}
-		MessagesString += "}";
-
-		Args.Add(TEXT("DeviceMessages"), MessagesString);
 		return FString::Format(TEXT("{\"DeviceName\": \"{DeviceName}\", \"DeviceIndex\": {DeviceIndex}, \"DeviceMessageTimingGap\": {DeviceMessageTimingGap}, \"DeviceDisplayName\": \"{DeviceDisplayName}\", \"DeviceMessages\": {DeviceMessages}}"), Args);
+	}
+
+	FString ToStringNative() const
+	{
+		FString Out;
+		FJsonObjectConverter::UStructToJsonObjectString<FBPDeviceObject>(*this, Out);
+		return Out;
 	}
 
 };
@@ -112,27 +238,27 @@ struct FBPScalarObject : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Index;
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double Scalar;
 
-	UPROPERTY(EditAnywhere, BlueprintType)
-	FString AcuatorType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ActuatorType;
 
 	FBPScalarObject()
 	{
 		Index = -1;
 		Scalar = 0.0f;
-		AcuatorType = "None";
+		ActuatorType = "None";
 	}
 
 	FBPScalarObject(int32 InIndex, double InScalar, FString InAcuatorType)
 	{
 		Index = InIndex;
 		Scalar = InScalar;
-		AcuatorType = InAcuatorType;
+		ActuatorType = InAcuatorType;
 	}
 
 	FString ToString() const
@@ -140,8 +266,8 @@ public:
 		FStringFormatNamedArguments Args;
 		Args.Add(TEXT("Index"), Index);
 		Args.Add(TEXT("Scalar"), Scalar);
-		Args.Add(TEXT("AcuatorType"), AcuatorType);
-		return FString::Format(TEXT("{\"Index\": {Index}, \"Scalar\": {Scalar}, \"AcuatorType\": \"{AcuatorType}\"}"), Args);
+		Args.Add(TEXT("ActuatorType"), ActuatorType);
+		return FString::Format(TEXT("{\"Index\": {Index}, \"Scalar\": {Scalar}, \"ActuatorType\": \"{ActuatorType}\"}"), Args);
 	}
 };
 
@@ -152,13 +278,13 @@ struct FBPLinearObject : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Index;
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Duration;
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		double Position;
 
 	FBPLinearObject()
@@ -192,13 +318,13 @@ struct FBPRotateObject : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Index;
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		double Speed;
 
-	UPROPERTY(EditAnywhere, BlueprintType)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool Clockwise;
 
 	FBPRotateObject()
@@ -232,17 +358,21 @@ struct FBPMessageBase
 
 public:
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString MessageTitle;
+
+	UPROPERTY()
+	int32 Id;
 
 	FBPMessageBase()
 	{
 		MessageTitle = "";
+		Id = -1;
 	}
 
-	FBPMessageBase(FString InMessageTitle)
+	FBPMessageBase(FString InMessageTitle, int32 InId)
 	{	
 		MessageTitle = InMessageTitle;
+		Id = InId;
 	}
 
 	virtual FString ToString() const
@@ -250,13 +380,11 @@ public:
 		return "{BaseType}";
 	}
 
-	//FString ToStringNative() const
-	//{
-	//	FString Out;
-	//	FJsonObjectConverter::UStructToJsonObjectString<FBPMessageBase>(*this, Out);
-	//	return Out;
-	//}
-
+	virtual int32 GetId() const
+	{
+		BPLog::Message(nullptr, "PARENT CALL: " + FString::FromInt(Id));
+		return Id;
+	}
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -309,9 +437,6 @@ struct FBPMessageStatusOk : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Id;
-
 	FBPMessageStatusOk()
 	{
 		MessageTitle = "Ok";
@@ -338,6 +463,11 @@ public:
 		return Out;
 	}
 
+	virtual int32 GetId() const override
+	{
+		return Id;
+	}
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -346,9 +476,6 @@ struct FBPMessageStatusError : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString ErrorMessage;
@@ -381,6 +508,11 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"ErrorMessage\": \"{ErrorMessage}\", \"ErrorCode\": {ErrorCode}}"), Args);
 	}
 
+	virtual int32 GetId() const override
+	{
+		return Id;
+	}
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -389,9 +521,6 @@ struct FBPMessageStatusPing : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	FBPMessageStatusPing()
 	{
@@ -420,9 +549,6 @@ struct FBPMessageRequestServerInfo : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString ClientName;
@@ -455,6 +581,11 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"ClientName\": \"{ClientName}\", \"MessageVersion\": {MessageVersion}}"), Args);
 	}
 
+	virtual int32 GetId() const override
+	{
+		return Id;
+	}
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -463,9 +594,6 @@ struct FBPMessageServerInfo : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString ServerName;
@@ -511,6 +639,11 @@ public:
 		return *Out;
 	}
 
+	virtual int32 GetId() const override
+	{
+		return Id;
+	}
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -519,9 +652,6 @@ struct FBPStartScanning : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	FBPStartScanning()
 	{
@@ -550,9 +680,6 @@ struct FBPStopScanning : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
 	FBPStopScanning()
 	{
 		MessageTitle = "StopScanning";
@@ -580,9 +707,6 @@ struct FBPScanningFinished : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
 	FBPScanningFinished()
 	{
 		MessageTitle = "ScanningFinished";
@@ -604,22 +728,19 @@ public:
 };
 
 USTRUCT(Blueprintable, BlueprintType)
-struct FBPRequestDeivceList : public FBPMessageBase
+struct FBPRequestDeviceList : public FBPMessageBase
 {
 	GENERATED_BODY()
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
-	FBPRequestDeivceList()
+	FBPRequestDeviceList()
 	{
 		MessageTitle = "RequestDeviceList";
 		Id = -1;
 	}
 
-	FBPRequestDeivceList(int32 InId)
+	FBPRequestDeviceList(int32 InId)
 	{
 		MessageTitle = "RequestDeviceList";
 		Id = InId;
@@ -634,26 +755,23 @@ public:
 };
 
 USTRUCT(Blueprintable, BlueprintType)
-struct FBPDeivceList : public FBPMessageBase
+struct FBPDeviceList : public FBPMessageBase
 {
 	GENERATED_BODY()
 
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FBPDeviceObject> Devices;
 
-	FBPDeivceList()
+	FBPDeviceList()
 	{
 		MessageTitle = "DeviceList";
 		Id = -1;
 		Devices = TArray<FBPDeviceObject>();
 	}
 
-	FBPDeivceList(int32 InId, TArray<FBPDeviceObject> InDevices)
+	FBPDeviceList(int32 InId, TArray<FBPDeviceObject> InDevices)
 	{
 		MessageTitle = "DeviceList";
 		Id = InId;
@@ -668,7 +786,7 @@ public:
 		FString DevicesString = "[";
 		for (int i = 0; i < Devices.Num(); i++)
 		{
-			DevicesString += "{" + Devices[i].ToString() + "}";
+			DevicesString += Devices[i].ToString();
 			if (i != Devices.Num() - 1)
 			{
 				DevicesString += ",";
@@ -680,29 +798,40 @@ public:
 
 		return FString::Format(TEXT("{\"Id\": {Id}, \"Devices\": {Devices}}"), Args);
 	}
+
+	FString ToStringNative() const
+	{
+		FString Out;
+		FJsonObjectConverter::UStructToJsonObjectString<FBPDeviceList>(*this, Out);
+		return Out;
+	}
+
+	virtual int32 GetId() const override
+	{
+		BPLog::Message(nullptr, "CHILD CALL: " + FString::FromInt(Id));
+		return Id;
+	}
+
 };
 
 USTRUCT(Blueprintable, BlueprintType)
-struct FBPDeivceAdded : public FBPMessageBase
+struct FBPDeviceAdded : public FBPMessageBase
 {
 	GENERATED_BODY()
 
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FBPDeviceObject Device;
 
-	FBPDeivceAdded()
+	FBPDeviceAdded()
 	{
 		MessageTitle = "DeviceAdded";
 		Id = -1;
 		Device = FBPDeviceObject();
 	}
 
-	FBPDeivceAdded(int32 InId, FBPDeviceObject InDevice)
+	FBPDeviceAdded(int32 InId, FBPDeviceObject InDevice)
 	{
 		MessageTitle = "DeviceAdded";
 		Id = InId;
@@ -719,26 +848,23 @@ public:
 };
 
 USTRUCT(Blueprintable, BlueprintType)
-struct FBPDeivceRemove : public FBPMessageBase
+struct FBPDeviceRemove : public FBPMessageBase
 {
 	GENERATED_BODY()
 
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 DeviceIndex;
 
-	FBPDeivceRemove()
+	FBPDeviceRemove()
 	{
 		MessageTitle = "DeviceRemoved";
 		Id = -1;
 		DeviceIndex = -1;
 	}
 
-	FBPDeivceRemove(int32 InId, int32 InDeviceIndex)
+	FBPDeviceRemove(int32 InId, int32 InDeviceIndex)
 	{
 		MessageTitle = "DeviceRemoved";
 		Id = InId;
@@ -760,9 +886,6 @@ struct FBPStopDeviceCmd : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 DeviceIndex;
@@ -797,9 +920,6 @@ struct FBPStopAllDevices : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
 	FBPStopAllDevices()
 	{
 		MessageTitle = "StopAllDevices";
@@ -826,9 +946,6 @@ struct FBPScalarCommand : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 DeviceIndex;
@@ -883,9 +1000,6 @@ struct FBPLinearCommand : public FBPMessageBase
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 DeviceIndex;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -938,9 +1052,6 @@ struct FBPRotateCommand : public FBPMessageBase
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 DeviceIndex;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -991,9 +1102,6 @@ struct FBPSensorMessageBase : public FBPMessageBase
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Id;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 DeviceIndex;
@@ -1186,6 +1294,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
 	static FString ToString_ServerInfo(const FBPMessageServerInfo& Target) { return Target.ToString(); };
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
+	static FString ToString_DeviceList(const FBPDeviceList& Target) { return Target.ToString(); };
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
+	static FString ToStringNative_DeviceList(const FBPDeviceList& Target) { return Target.ToStringNative(); };
 	
 	template<typename T>
 	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, T& Message);

@@ -6,19 +6,19 @@
 
 #include "BPTypes.h"
 
-#include "BPSettings.generated.h"
+#include "ButtplugUESettings.generated.h"
 
 /**
  * 
  */
 UCLASS(Config = ButtplugUE)
-class BUTTPLUGUE_API UBPSettings : public UDeveloperSettings
+class BUTTPLUGUE_API UButtplugUESettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
 public:
 
-	UBPSettings();
+	UButtplugUESettings();
 
 	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Logging level to display in Log."))
 		EBPLogVerbosity LoggingVerbosity = EBPLogVerbosity::All;
@@ -43,5 +43,4 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Settings"))
 		static FString GetButtplugClientName();
 
-	virtual FName GetSectionName() const override;
 };

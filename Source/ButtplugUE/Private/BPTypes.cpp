@@ -57,9 +57,29 @@ TArray<FInstancedStruct> UBPTypes::DeserializeMessage(const TOptional<UObject*> 
 
 UScriptStruct* UBPTypes::GetStructType(const FString& Name)
 {
-	TMap<FString, UScriptStruct*> Types = {
-		{"ServerInfo", FBPMessageServerInfo::StaticStruct()},
-		{"DeviceList", FBPDeivceList::StaticStruct()}
+	const TMap<FString, UScriptStruct*> Types = {
+		{"Ok",FBPMessageStatusOk::StaticStruct()},
+		{"Error",FBPMessageStatusError::StaticStruct()},
+		{"Ping",FBPMessageStatusPing::StaticStruct()},
+		{"RequestServerInfo",FBPMessageRequestServerInfo::StaticStruct()},
+		{"ServerInfo",FBPMessageServerInfo::StaticStruct()},
+		{"StartScanning",FBPStartScanning::StaticStruct()},
+		{"StopScanning",FBPStopScanning::StaticStruct()},
+		{"ScanningFinished",FBPScanningFinished::StaticStruct()},
+		{"RequestDeviceList",FBPRequestDeviceList::StaticStruct()},
+		{"DeviceList",FBPDeviceList::StaticStruct()},
+		{"DeviceAdded",FBPDeviceAdded::StaticStruct()},
+		{"DeviceRemoved",FBPDeviceRemove::StaticStruct()},
+		{"StopDeviceCmd",FBPStopDeviceCmd::StaticStruct()},
+		{"StopAllDevices",FBPStopAllDevices::StaticStruct()},
+		{"ScalarCmd",FBPScalarCommand::StaticStruct()},
+		{"LinearCmd",FBPLinearCommand::StaticStruct()},
+		{"RotateCmd",FBPRotateCommand::StaticStruct()},
+		{"SensorMessageBase",FBPSensorMessageBase::StaticStruct()},
+		{"SensorReadCmd",FBPSensorReadCommand::StaticStruct()},
+		{"SensorReading",FBPSensorReading::StaticStruct()},
+		{"SensorSubscribeCmd",FBPSensorSubscribeCommand::StaticStruct()},
+		{"SensorUnsubscribeCmd",FBPSensorUnsubscribeCommand::StaticStruct()}
 	};
 
 	check(Types.Contains(Name));

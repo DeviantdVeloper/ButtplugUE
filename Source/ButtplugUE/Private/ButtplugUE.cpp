@@ -13,7 +13,7 @@ void FButtplugUEModule::StartupModule()
 
 void FButtplugUEModule::ShutdownModule()
 {
-	BPLog::Message(nullptr, "ButtplugUE module unloading.");
+	UE_LOG(LogButtplugUE, Display, TEXT("ButtplugUE module unloading."));
 }
 
 #undef LOCTEXT_NAMESPACE
