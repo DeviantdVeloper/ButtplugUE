@@ -468,11 +468,6 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
 
-	virtual int32 GetId() const override
-	{
-		return Id;
-	}
-
 };
 
 //Definition for "Error" message from Server.
@@ -514,11 +509,6 @@ public:
 		Args.Add(TEXT("ErrorMessage"), ErrorMessage);
 		Args.Add(TEXT("ErrorCode"), (uint8)ErrorCode);
 		return FString::Format(TEXT("{\"Id\": {Id}, \"ErrorMessage\": \"{ErrorMessage}\", \"ErrorCode\": {ErrorCode}}"), Args);
-	}
-
-	virtual int32 GetId() const override
-	{
-		return Id;
 	}
 
 };
@@ -595,11 +585,6 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"ClientName\": \"{ClientName}\", \"MessageVersion\": {MessageVersion}}"), Args);
 	}
 
-	virtual int32 GetId() const override
-	{
-		return Id;
-	}
-
 };
 
 //Definition of Server Info message from Server.
@@ -654,11 +639,6 @@ public:
 		FBPMessageServerInfo* Out = new FBPMessageServerInfo();
 		FJsonObjectConverter::JsonObjectStringToUStruct<FBPMessageServerInfo>(Source, Out);
 		return *Out;
-	}
-
-	virtual int32 GetId() const override
-	{
-		return Id;
 	}
 
 };
@@ -829,11 +809,6 @@ public:
 		Args.Add(TEXT("Devices"), DevicesString);
 
 		return FString::Format(TEXT("{\"Id\": {Id}, \"Devices\": {Devices}}"), Args);
-	}
-
-	virtual int32 GetId() const override
-	{
-		return Id;
 	}
 
 };

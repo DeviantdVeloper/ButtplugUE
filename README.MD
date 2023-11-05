@@ -10,6 +10,8 @@ If you use this in your project(s), please consider supporting its continued dev
 
 Buttplug UE is a plugin for the Unreal Engine that implements the [Buttplug.io](https://buttplug.io/) framework for controlling a wide range of *external devices* and other peripherals directly from your game.
 
+Tested with Intiface Central v2.5.1
+
 ### Supported Engine Versions
 
 #### Confirmed
