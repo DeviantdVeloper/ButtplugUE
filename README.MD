@@ -8,6 +8,35 @@ An Unreal Engine integration for the [Buttplug.io](https://buttplug.io/) framewo
 
 Buttplug UE is a plugin for the Unreal Engine that implements the [Buttplug.io](https://buttplug.io/) framework for controlling a wide range of *external devices* and other peripherals directly from your game.
 
+### Supported Engine Versions
+
+#### Confirmed
+
+- 5.2
+- 5.3
+
+#### Unconfirmed (but should, let me know)
+
+- 5.0
+- 5.1
+
+#### Unsupported
+
+- <= 4.27
+
+### Supported Platforms
+
+#### Confirmed
+
+- Windows (64 bit)
+- Android
+
+#### Unconfirmed (but should, let me know)
+
+- Mac
+- Linux
+- iOS
+
 ### Architecture
 
 Buttplug.io and this plugin work through the [Intiface Central](https://intiface.com/central/) application, like so:
@@ -63,6 +92,8 @@ As you can see, this means that all communication to and from ButtplugUE is with
 
 ## Quick Start
 
+For the fastest start simply open the `Debug_P` map in the ButtplugUE content folder and play it. This will bring up an on-screen UI that will allow you to connect to and manipulate connected devices through Intiface. The UI itself can be found in the UI folder of the plugin's content where you can see how it, and its sub-components, do the things it does.
+
 By default, the ButtplugUE plugin will automatically attempt to connect to a locally running Intiface instance at the default address and port (`127.0.0.1:12345`) so launch Intiface and start it with the defaults and on launch your Unreal instance should connect. Check the log (category `LogButtplugUE`) for messages confirming as such.
 
 You can change these settings in `Project Settings > Plugins > ButtplugUE Settings`. You can also connect to Intiface instances running on the local network, assuming you have a basic network environment.
@@ -71,9 +102,26 @@ Next you will want to get a list of devices. This can be achieved either by tell
 
 The former will start Intiface scanning for devices, where as the latter will return a list of previously found devices. To receive the responses you will need to either bind to the `Response` delegate from the `RequestDeviceList` function, or bind to the `OnDeviceAddedResponse` delegate in `BPDeviceSubsystem`, as after you start scanning you will get a `DeviceAdded` message after each new device is found and registered with Intiface, and you will need to send the `StopScanning` command afterwards.
 
-Now that you have a list of devices to choose from, you can send an appropriate command. Each device will have a list of `Scalar`, `Linear`, and `Rotate` commands based on what kind of action the device supports. Simply send the appropriate type of command and your device should
+Now that you have a list of devices to choose from, you can send an appropriate command. Each device will have a list of `Scalar`, `Linear`, and `Rotate` commands based on what kind of action the device supports. Simply send the appropriate type of command and your device should respond appropriately.
+
+ButtplugUE closes it's connection with Intiface when play ends, but you can also manually disconnect (and reconnect) through the Subsystem if desired.
 
 ## Planned Features
 
+The following are features that are not yet implemented, but will be at a later date.
+
+In no particular order:
+
+- Sensor Support.
+- Pre-programmed device commands, eg pulsing, ramping, fire-and-forget durations.
+    - Custom curve support.
+- Further abstraction from command types, simplified developer front-end.
+- Support for multiple Intiface connections (because why not?)
+- Double check if there are any replication implications from using `UGameInstanceSubsystem` (spoiler, there are).
+    - This might mean moving (or duplicating) the behaviour to a `UObject`, thereby making replication the responsibility of you, the developer.
 
 ## Further Reading
+
+- [Buttplug.io Specs](https://buttplug-developer-guide.docs.buttplug.io/docs/spec)
+- [Unreal Engine Subsystems](https://docs.unrealengine.com/5.0/en-US/programming-subsystems-in-unreal-engine/)
+- [Unreal Engine Struct Utils](https://docs.unrealengine.com/5.1/en-US/API/Plugins/StructUtils/)

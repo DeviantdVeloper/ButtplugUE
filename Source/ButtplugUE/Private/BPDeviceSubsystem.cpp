@@ -64,7 +64,7 @@ void UBPDeviceSubsystem::OnConnected()
 
 	//TODO Calling this here for now since it needs to be done to establish a viable connection.
 	OnMessageServerInfoReceived.AddDynamic(this, &UBPDeviceSubsystem::OnServerHandshake);
-	RequestServerInfo();
+	RequestServerInfo(FBPInstancedResponseDelegate());
 }
 
 void UBPDeviceSubsystem::OnConnectionError(const FString& Error)
@@ -157,8 +157,9 @@ void UBPDeviceSubsystem::OnServerHandshake(const FBPMessageServerInfo& ServerInf
 	{
 		BPLog::Message(this, "Received Max Ping Time, beginning ping loop.");
 		ServerPingTimer.Invalidate();
-		GetWorld()->GetTimerManager().SetTimer(ServerPingTimer, this, &UBPDeviceSubsystem::PingServer, ServerInfo.MaxPingTime * 1000, true);
-		PingServer();
+		FTimerDelegate PingDelegate = FTimerDelegate::CreateUObject(this, &UBPDeviceSubsystem::PingServer, FBPInstancedResponseDelegate());
+		GetWorld()->GetTimerManager().SetTimer(ServerPingTimer, PingDelegate, (ServerInfo.MaxPingTime * 1000.0f) * 0.9f, true);
+		PingServer(FBPInstancedResponseDelegate());
 	}
 	OnMessageServerInfoReceived.Remove(this, FName("OnServerHandshake"));
 }
@@ -225,17 +226,17 @@ void UBPDeviceSubsystem::Disconnect()
 	Socket.Reset();
 }
 
-int32 UBPDeviceSubsystem::RequestServerInfo()
+int32 UBPDeviceSubsystem::RequestServerInfo(FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
-	return PackAndSendMessage<FBPMessageRequestServerInfo>(TOptional<FBPInstancedResponseDelegate>(), UButtplugUESettings::GetButtplugClientName(), 3);
+	return PackAndSendMessage<FBPMessageRequestServerInfo>(Response, UButtplugUESettings::GetButtplugClientName(), 3);
 }
 
-void UBPDeviceSubsystem::PingServer()
+void UBPDeviceSubsystem::PingServer(FBPInstancedResponseDelegate Response)
 {
 	if (!IsConnected())
 	{
@@ -243,7 +244,7 @@ void UBPDeviceSubsystem::PingServer()
 		ServerPingTimer.Invalidate();
 		return;
 	}
-	PackAndSendMessage<FBPMessageStatusPing>(TOptional<FBPInstancedResponseDelegate>());
+	PackAndSendMessage<FBPMessageStatusPing>(Response);
 }
 
 int32 UBPDeviceSubsystem::RequestDeviceList(FBPInstancedResponseDelegate Response)

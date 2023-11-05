@@ -13,15 +13,13 @@
 
 #include "BPTypes.generated.h"
 
-UENUM(Blueprintable, BlueprintType)
-enum class EBPLogVerbosity : uint8
-{
-	NoLogging = 0x00,
-	Errors = 0x01,
-	Warnings = 0x02,
-	All = 0x03
-};
+/** This class contains all the declarations for enums and structs
+* They are used to communicate with Intiface Central, handling serialization of JSON messages in both directions.
+* Intiface's JSON structure is a little different to how Unreal handles it, so we are manually declaring our own Serialization method
+* via the virtual ToString() function.
+*/
 
+//Error types that can come from Intiface.
 UENUM(BlueprintType)
 enum class EBPErrorCode : uint8
 {
@@ -33,6 +31,7 @@ enum class EBPErrorCode : uint8
 	MAX						UMETA(Hidden)
 };
 
+//Base command message type, which can describe any type of command.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPCommandMessage : public FTableRowBase
 {
@@ -74,6 +73,9 @@ public:
 	
 };
 
+/*Stub structure to denote the existance of a StopDevice command.
+* Defined here to provide automatic JSON serialization in other structs.
+*/
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPStopDeviceCommand
 {
@@ -85,6 +87,7 @@ public:
 	{}
 };
 
+//Wrapper for all commands a device may support.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPDeviceMessages
 {
@@ -166,6 +169,7 @@ public:
 
 };
 
+//Definition of a Device as described by Intiface.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPDeviceObject : public FTableRowBase
 {
@@ -222,15 +226,9 @@ public:
 		return FString::Format(TEXT("{\"DeviceName\": \"{DeviceName}\", \"DeviceIndex\": {DeviceIndex}, \"DeviceMessageTimingGap\": {DeviceMessageTimingGap}, \"DeviceDisplayName\": \"{DeviceDisplayName}\", \"DeviceMessages\": {DeviceMessages}}"), Args);
 	}
 
-	FString ToStringNative() const
-	{
-		FString Out;
-		FJsonObjectConverter::UStructToJsonObjectString<FBPDeviceObject>(*this, Out);
-		return Out;
-	}
-
 };
 
+//Deifnition of a Scalar component of a device.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPScalarObject : public FTableRowBase
 {
@@ -271,6 +269,7 @@ public:
 	}
 };
 
+//Definition of a Linear component of a device.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPLinearObject : public FTableRowBase
 {
@@ -311,6 +310,7 @@ public:
 	}
 };
 
+//Definition of a Rotate component of a device.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPRotateObject : public FTableRowBase
 {
@@ -351,6 +351,9 @@ public:
 	}
 };
 
+/*Base class for all Message structs
+* Contains Id and Message title to align with Intiface's way of serializing messages.
+*/
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPMessageBase
 {
@@ -377,6 +380,7 @@ public:
 
 	virtual ~FBPMessageBase() = default;
 
+	//This is where we define serialization for this and any child struct.
 	virtual FString ToString() const
 	{
 		return "{BaseType}";
@@ -384,11 +388,14 @@ public:
 
 	virtual int32 GetId() const
 	{
-		BPLog::Message(nullptr, "PARENT CALL: " + FString::FromInt(Id));
 		return Id;
 	}
 };
 
+/*A wrapper for sending one or multiple messages in a single packet.
+*	Intiface treats every message as an array of commands/requests with a title per-message.
+*	This wrapper imitates that for serialization.
+*/
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPMessagePacket
 {
@@ -432,6 +439,7 @@ public:
 
 };
 
+//Definition for "OK" message from Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPMessageStatusOk : public FBPMessageBase
 {
@@ -460,13 +468,6 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
 
-	FString ToStringNative() const
-	{
-		FString Out;
-		FJsonObjectConverter::UStructToJsonObjectString<FBPMessageStatusOk>(*this, Out);
-		return Out;
-	}
-
 	virtual int32 GetId() const override
 	{
 		return Id;
@@ -474,6 +475,7 @@ public:
 
 };
 
+//Definition for "Error" message from Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPMessageStatusError : public FBPMessageBase
 {
@@ -521,6 +523,7 @@ public:
 
 };
 
+//Definition for simple Ping message to Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPMessageStatusPing : public FBPMessageBase
 {
@@ -551,6 +554,7 @@ public:
 
 };
 
+//Definition for Server info Request to Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPMessageRequestServerInfo : public FBPMessageBase
 {
@@ -598,6 +602,7 @@ public:
 
 };
 
+//Definition of Server Info message from Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPMessageServerInfo : public FBPMessageBase
 {
@@ -658,6 +663,7 @@ public:
 
 };
 
+//Definition of Start Scaning command to Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPStartScanning : public FBPMessageBase
 {
@@ -687,6 +693,7 @@ public:
 	}
 };
 
+//Definition of Stop Scanning command to Server
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPStopScanning : public FBPMessageBase
 {
@@ -716,6 +723,7 @@ public:
 	}
 };
 
+//Definition of Scanning Finished message from Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPScanningFinished : public FBPMessageBase
 {
@@ -745,6 +753,7 @@ public:
 	}
 };
 
+//Definition of RequestDeviceList request to Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPRequestDeviceList : public FBPMessageBase
 {
@@ -774,6 +783,7 @@ public:
 	}
 };
 
+//Definition of DeviceList message from Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPDeviceList : public FBPMessageBase
 {
@@ -821,13 +831,6 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"Devices\": {Devices}}"), Args);
 	}
 
-	FString ToStringNative() const
-	{
-		FString Out;
-		FJsonObjectConverter::UStructToJsonObjectString<FBPDeviceList>(*this, Out);
-		return Out;
-	}
-
 	virtual int32 GetId() const override
 	{
 		return Id;
@@ -835,6 +838,7 @@ public:
 
 };
 
+//Definition of DeviceAdded message from Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPDeviceAdded : public FBPMessageBase
 {
@@ -870,6 +874,7 @@ public:
 	}
 };
 
+//Definition of DeviceRemoved message from Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPDeviceRemove : public FBPMessageBase
 {
@@ -905,6 +910,7 @@ public:
 	}
 };
 
+//Definition of StopDevice command to Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPStopDeviceCmd : public FBPMessageBase
 {
@@ -940,6 +946,7 @@ public:
 	}
 };
 
+//Definition of StopAllDevices command to Server.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPStopAllDevices : public FBPMessageBase
 {
@@ -969,6 +976,7 @@ public:
 	}
 };
 
+//Definition of Scalar Command message to Server. Can wrap multiple commands to a single device.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPScalarCommand : public FBPMessageBase
 {
@@ -1023,6 +1031,7 @@ public:
 	}
 };
 
+//Definition of Linear Command message to Server. Can wrap multiple commands to a single device.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPLinearCommand : public FBPMessageBase
 {
@@ -1077,6 +1086,7 @@ public:
 	}
 };
 
+//Definition of Rotate Command message to Server. Can wrap multiple commands to a single device.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPRotateCommand : public FBPMessageBase
 {
@@ -1131,6 +1141,7 @@ public:
 	}
 };
 
+//Base struct type for Sensor Messages to and from Server. Currently unsupported.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPSensorMessageBase : public FBPMessageBase
 {
@@ -1179,6 +1190,7 @@ public:
 	}
 };
 
+//Definition of Read Sensor request to Server. Currently unsupported.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPSensorReadCommand : public FBPSensorMessageBase
 {
@@ -1208,6 +1220,7 @@ public:
 
 };
 
+//Definition of SensorReading message from Server. Currently unsupported.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPSensorReading : public FBPSensorMessageBase
 {
@@ -1263,6 +1276,7 @@ public:
 	}
 };
 
+//Definition of SensorSubscription command to server. Current unsupported.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPSensorSubscribeCommand : public FBPSensorMessageBase
 {
@@ -1292,6 +1306,7 @@ public:
 
 };
 
+//Definition of Sensor Unsubscribe command to server. Current unsupported.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPSensorUnsubscribeCommand : public FBPSensorMessageBase
 {
@@ -1321,41 +1336,27 @@ public:
 
 };
 
-/**
- * 
- */
+/**A selection of helpers for handling messages and types.*/
 UCLASS()
 class BUTTPLUGUE_API UBPTypes : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
 public:
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
-	static FString ToString_StatusError(const FBPMessageStatusError& Target){return Target.ToString(); };
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
-	static FString ToString_StatusOk(const FBPMessageStatusOk& Target) { return Target.ToString(); };
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
-	static FString ToString_MessagePacket(const FBPMessagePacket& Target) { return Target.ToString(); };
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
-	static FString ToString_ServerInfo(const FBPMessageServerInfo& Target) { return Target.ToString(); };
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
-	static FString ToString_DeviceList(const FBPDeviceList& Target) { return Target.ToString(); };
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "ButtplugUE|Serialization"))
-	static FString ToStringNative_DeviceList(const FBPDeviceList& Target) { return Target.ToStringNative(); };
 	
+	/*For packaging up a message of type T, optional context for logging purposes*/
 	template<typename T>
 	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, T& Message);
 
+	/*For packaging up an array of messages of type T, optional context for logging purposes*/
 	template<typename T>
 	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, TArray<T> Message);
 
+	/*For converting a received JSON from Intiface into a struct as defined in this header*/
 	static TArray<FInstancedStruct> DeserializeMessage(const TOptional<UObject*> Context, const FString& Message);
 
+	/*Helper for getting the UScriptStruct based on its name in String form
+	Neccessary for the conversion from Intiface's unique way of packaging JSON.
+	*/
 	static UScriptStruct* GetStructType(const FString& Name);
 };
