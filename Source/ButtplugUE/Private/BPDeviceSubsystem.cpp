@@ -7,6 +7,7 @@
 
 #include "BPSettings.h"
 #include "BPLogging.h"
+#include "BPTypes.h"
 
 void UBPDeviceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -49,12 +50,20 @@ void UBPDeviceSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+bool UBPDeviceSubsystem::IsConnected() const
+{
+	return Socket.IsValid() && Socket->IsConnected();
+}
+
 void UBPDeviceSubsystem::OnConnected()
 {
 	FStringFormatNamedArguments Args;
 	Args.Add("Server", UBPSettings::GetButtplugServer());
 	Args.Add("Port", UBPSettings::GetButtplugPort());
-	BPLog::Message(this, "Successfully Connected to Buttplug Server at: {Server}:{Port}", Args);
+	BPLog::Message(this, "Successfully Connected to Buttplug Server at: {Server}:{Port}. Requesting Server Info Handshake.", Args);
+
+	//TODO Calling this here for now since it needs to be done to establish a viable connection.
+	RequestServerInfo();
 }
 
 void UBPDeviceSubsystem::OnConnectionError(const FString& Error)
@@ -68,10 +77,16 @@ void UBPDeviceSubsystem::OnConnectionError(const FString& Error)
 
 void UBPDeviceSubsystem::OnClosed(int32 StatusCode, const FString& Reason, bool bWasClean)
 {
+	FStringFormatNamedArguments Args;
+	Args.Add("StatusCode", StatusCode);
+	Args.Add("Reason", Reason);
+	Args.Add("WasClean", bWasClean);
+	BPLog::Warning(this, "Connection to Buttplug Server Closed! Code: {StatusCode}, Reason: {Reason}, WasClean: {WasClean}", Args);
 }
 
 void UBPDeviceSubsystem::OnMessage(const FString& Message)
 {
+	BPLog::Message(this, "Message Received: " + Message);
 }
 
 void UBPDeviceSubsystem::OnRawMessage(const void* Data, SIZE_T Size, SIZE_T BytesRemaining)
@@ -80,4 +95,37 @@ void UBPDeviceSubsystem::OnRawMessage(const void* Data, SIZE_T Size, SIZE_T Byte
 
 void UBPDeviceSubsystem::OnMessageSent(const FString& MessageString)
 {
+	BPLog::Message(this, "Message Sent: " + MessageString);
+}
+
+void UBPDeviceSubsystem::RequestServerInfo()
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return;
+	}
+
+	//TODO make this a simple static constructor. For all messages.
+	FBPMessageRequestServerInfo Request = FBPMessageRequestServerInfo(1, "ButtplugUE", 3);
+	FBPMessagePacket Message = FBPMessagePacket();
+	Message.Messages.Add(FInstancedStruct::Make<FBPMessageRequestServerInfo>(Request));
+
+	Socket->Send(Message.ToString());
+}
+
+void UBPDeviceSubsystem::RequestDeviceList()
+{
+	if (!IsConnected())
+	{
+		BPLog::Error(this, "Tried to send message while not connected!");
+		return;
+	}
+
+	//TODO make this a simple static constructor. For all messages.
+	FBPRequestDeivceList Request = FBPRequestDeivceList(1);
+	FBPMessagePacket Message = FBPMessagePacket();
+	Message.Messages.Add(FInstancedStruct::Make<FBPRequestDeivceList>(Request));
+
+	Socket->Send(Message.ToString());
 }

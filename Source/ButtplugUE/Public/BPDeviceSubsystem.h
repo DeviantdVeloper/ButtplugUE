@@ -27,6 +27,7 @@ public:
 private:
 
 	TSharedPtr<IWebSocket> Socket;
+	bool IsConnected() const;
 
 	void OnConnected();
 	void OnConnectionError(const FString& Error);
@@ -34,5 +35,13 @@ private:
 	void OnMessage(const FString& Message);
 	void OnRawMessage(const void* Data, SIZE_T Size, SIZE_T BytesRemaining);
 	void OnMessageSent(const FString& MessageString);
+
+public:
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	void RequestServerInfo();
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	void RequestDeviceList();
 	
 };
