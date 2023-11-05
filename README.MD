@@ -12,12 +12,9 @@ Buttplug UE is a plugin for the Unreal Engine that implements the [Buttplug.io](
 
 #### Confirmed
 
+- 5.1 - (No example content)
 - 5.2
 - 5.3
-
-#### Unconfirmed (but should, let me know)
-
-- 5.1
 
 #### Unsupported
 
