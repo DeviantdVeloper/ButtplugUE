@@ -306,7 +306,7 @@ public:
 		Args.Add(TEXT("Index"), Index);
 		Args.Add(TEXT("Duration"), Duration);
 		Args.Add(TEXT("Position"), Position);
-		return FString::Format(TEXT("{\"Index\": {Index}, \"Duration\": {Duration}, \"Position\": \"{Position}\"}"), Args);
+		return FString::Format(TEXT("{\"Index\": {Index}, \"Duration\": {Duration}, \"Position\": {Position}}"), Args);
 	}
 };
 

@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0",
+	"VersionName": "1.0.1",
 	"FriendlyName": "ButtplugUE",
 	"Description": "An Unreal Engine integration for the Buttplug.io framework.",
 	"Category": "Other",
