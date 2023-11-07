@@ -131,5 +131,3 @@ In no particular order:
 If you use this in your project(s), please consider supporting its continued development on my [SubscribeStar](https://subscribestar.adult/deviant-dveloper), as well as that of the official [Buttplug.io](https://www.patreon.com/qdot) development.
 
 You can contact me here, on [Twitter/X](https://twitter.com/DeviantDveloper), or Discord (\_ddev\_).
-
-This plugin is provided as-is with no guarantee of quality or sufficiency for your use-case. You can edit and redistribute as you like, so long as you credit the original author (d/Dev) and link to this repository in your ReadMe or equivalent.
