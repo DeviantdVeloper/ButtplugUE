@@ -7,6 +7,7 @@
 
 #include "ButtplugUESettings.h"
 #include "BPLogging.h"
+#include "BPManagedCommand.h"
 
 void UBPDeviceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -325,6 +326,30 @@ int32 UBPDeviceSubsystem::SendRotateCommand(const FBPRotateCommand& Command, FBP
 		return -1;
 	}
 	return PackAndSendMessage<FBPRotateCommand>(Response, Command.DeviceIndex, Command.Rotations);
+}
+
+FGuid UBPDeviceSubsystem::StartPatternCommand(FBPDeviceObject TargetDevice, FBPScalarCommand InCommand, UCurveFloat* InPattern,
+												float InDurationSeconds, int32 UpdatesPerSecond)
+{
+	FGuid Out = FGuid::NewGuid();
+	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, InCommand, InPattern, InDurationSeconds, Out, UpdatesPerSecond));
+	ManagedCommands[Out]->OnCommandStopped.AddDynamic(this, &UBPDeviceSubsystem::OnCommandStopped);
+	return Out;
+}
+
+void UBPDeviceSubsystem::StopPatternCommand(FGuid CommandId)
+{
+	if (!ManagedCommands.Contains(CommandId))
+	{
+		BPLog::Warning(this, "Could not stop Pattern command with id \"" + CommandId.ToString() + "\", no such ID in Pattern commands list.");
+		return;
+	}
+	ManagedCommands[CommandId]->StopCommand();
+}
+
+void UBPDeviceSubsystem::OnCommandStopped(FGuid CommandId)
+{
+	ManagedCommands.Remove(CommandId);
 }
 
 int32 UBPDeviceSubsystem::SendSensorReadCommand(const FBPSensorReadCommand& Command, FBPInstancedResponseDelegate Response)

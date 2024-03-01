@@ -20,19 +20,19 @@ public:
 
 	UButtplugUESettings();
 
-	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Logging level to display in Log."))
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Logging level to display in Log.", Category = "ButtplugUE|Settings"))
 		EBPLogVerbosity LoggingVerbosity = EBPLogVerbosity::Warnings;
 
-	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Address of the ButtplugIO server, Intiface Central."))
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Address of the ButtplugIO server, Intiface Central.", Category = "ButtplugUE|Settings"))
 		FString Server = "ws://127.0.0.1";
 
-	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Port of the ButtplugIO server, Intiface Central."))
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Port of the ButtplugIO server, Intiface Central.", Category = "ButtplugUE|Settings"))
 		int32 Port = 12345;
 
-	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Name to provide to Intiface upon connection, good for identifying your game to users."))
+	UPROPERTY(Config, EditAnywhere, meta = (ToolTip = "Name to provide to Intiface upon connection, good for identifying your game to users.", Category = "ButtplugUE|Settings"))
 		FString ClientName = "ButtplugUE";
 
-	UPROPERTY(Config, EditAnywhere, meta = (AdvancedDisplay, ToolTip = "Whether the subsystem should automatically try to connect to Intiface during initialization. If this is set to false you will need to connect manually via 'Connect' on the BPDeviceSubsystem."))
+	UPROPERTY(Config, EditAnywhere, meta = (AdvancedDisplay, Category = "ButtplugUE|Settings", ToolTip = "Whether the subsystem should automatically try to connect to Intiface during initialization. If this is set to false you will need to connect manually via 'Connect' on the BPDeviceSubsystem."))
 		bool bAutoConnect = true;
 
 	static EBPLogVerbosity GetLoggingVerbosity();

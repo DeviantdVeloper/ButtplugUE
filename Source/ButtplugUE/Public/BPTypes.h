@@ -31,6 +31,15 @@ enum class EBPErrorCode : uint8
 	MAX						UMETA(Hidden)
 };
 
+UENUM(BlueprintType)
+enum class EBPCommandType : uint8
+{
+	Scalar		= 0x00	UMETA(Tooltip = ""),
+	Linear		= 0x01	UMETA(Tooltip = ""),
+	Rotation	= 0x02	UMETA(Tooltip = ""),
+	MAX					UMETA(Hidden)
+};
+
 //Base command message type, which can describe any type of command.
 USTRUCT(Blueprintable, BlueprintType)
 struct FBPCommandMessage : public FTableRowBase
@@ -39,13 +48,13 @@ struct FBPCommandMessage : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	int32 StepCount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	FString FeatureDescriptor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	FString ActuatorType;
 
 	FBPCommandMessage()
@@ -95,16 +104,16 @@ struct FBPDeviceMessages
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		TArray<FBPCommandMessage> ScalarCmd;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		TArray<FBPCommandMessage> LinearCmd;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		TArray<FBPCommandMessage> RotateCmd;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		FBPStopDeviceCommand StopDeviceCmd;
 
 	FBPDeviceMessages()
@@ -177,19 +186,19 @@ struct FBPDeviceObject : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	FString DeviceName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	int32 DeviceIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	int32 DeviceMessageTimingGap;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	FString DeviceDisplayName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	FBPDeviceMessages DeviceMessages;
 
 	FBPDeviceObject()
@@ -236,13 +245,13 @@ struct FBPScalarObject : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	int32 Index;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	double Scalar;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	FString ActuatorType;
 
 	FBPScalarObject()
@@ -277,13 +286,13 @@ struct FBPLinearObject : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 Index;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 Duration;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		double Position;
 
 	FBPLinearObject()
@@ -318,13 +327,13 @@ struct FBPRotateObject : public FTableRowBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 Index;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		double Speed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		bool Clockwise;
 
 	FBPRotateObject()
@@ -478,10 +487,10 @@ struct FBPMessageStatusError : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		FString ErrorMessage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		EBPErrorCode ErrorCode;
 
 	FBPMessageStatusError()
@@ -552,10 +561,10 @@ struct FBPMessageRequestServerInfo : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		FString ClientName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 MessageVersion;
 
 	FBPMessageRequestServerInfo()
@@ -595,13 +604,13 @@ struct FBPMessageServerInfo : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		FString ServerName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 MessageVersion;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 MaxPingTime;
 
 	FBPMessageServerInfo()
@@ -771,7 +780,7 @@ struct FBPDeviceList : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		TArray<FBPDeviceObject> Devices;
 
 	FBPDeviceList()
@@ -821,7 +830,7 @@ struct FBPDeviceAdded : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		FBPDeviceObject Device;
 
 	FBPDeviceAdded()
@@ -857,7 +866,7 @@ struct FBPDeviceRemove : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 DeviceIndex;
 
 	FBPDeviceRemove()
@@ -893,7 +902,7 @@ struct FBPStopDeviceCmd : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 DeviceIndex;
 
 	FBPStopDeviceCmd()
@@ -959,10 +968,10 @@ struct FBPScalarCommand : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 DeviceIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		TArray<FBPScalarObject> Scalars;
 
 	FBPScalarCommand()
@@ -1014,10 +1023,10 @@ struct FBPLinearCommand : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 DeviceIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		TArray<FBPLinearObject> Vectors;
 
 	FBPLinearCommand()
@@ -1069,10 +1078,10 @@ struct FBPRotateCommand : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 DeviceIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		TArray<FBPRotateObject> Rotations;
 
 	FBPRotateCommand()
@@ -1124,13 +1133,13 @@ struct FBPSensorMessageBase : public FBPMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 DeviceIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		int32 SensorIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 		FString SensorType;
 
 	FBPSensorMessageBase()
@@ -1203,7 +1212,7 @@ struct FBPSensorReading : public FBPSensorMessageBase
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Category = "ButtplugUE|Types"))
 	TArray<int32> Data;
 
 	FBPSensorReading()

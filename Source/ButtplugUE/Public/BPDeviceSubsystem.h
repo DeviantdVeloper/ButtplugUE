@@ -46,6 +46,9 @@ DECLARE_DYNAMIC_DELEGATE_OneParam(FBPInstancedResponseDelegate, const FInstanced
 //Blank delegate, for simple triggers.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBPBasicDelegate);
 
+class UBPManagedCommand;
+class UCurveFloat;
+
 /** This is the main Subsystem for communicating with Intiface, and by extension controlling devices.
  * This has a delegate for every type of incoming message.
  * It also has functions for sending messages to Intiface, each of which has
@@ -62,51 +65,51 @@ public:
 	/*For their definitions and meaning check out the Intiface spec sheet:*/
 	/* https://buttplug-developer-guide.docs.buttplug.io/docs/spec/messages */
 
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPOkDelegate OnMessageStatusOkReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPErrorDelegate OnMessageStatusErrorReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPPingDelegate OnMessageStatusPingReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPRequestServerInfoDelegate OnMessageRequestServerInfoReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPServerInfoDelegate OnMessageServerInfoReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPStartScanningDelegate OnStartScanningReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPStopScanningDelegate OnStopScanningReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPScanningFinishedDelegate OnScanningFinishedReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPRequestDeviceListDelegate OnRequestDeviceListReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPDeviceListDelegate OnDeviceListReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPDeviceAddedDelegate OnDeviceAddedReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPDeviceRemovedDelegate OnDeviceRemoveReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPStopDeviceCmdDelegate OnStopDeviceCmdReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPStopAllDevicesDelegate OnStopAllDevicesReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPScalarCmdDelegate OnScalarCommandReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPLinearCmdDelegate OnLinearCommandReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPRotateCmdDelegate OnRotateCommandReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPSensorMessageBaseDelegate OnSensorMessageBaseReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPSensorReadCmdDelegate OnSensorReadCommandReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPSensorReadingDelegate OnSensorReadingReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPSensorSubscribeCmdDelegate OnSensorSubscribeCommandReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPSensorUnsubscribeCmdDelegate OnSensorUnsubscribeCommandReceived;
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Meta = (Category = "ButtplugUE|Events"))
 	FBPBasicDelegate OnServerDisconnect;
 
 	/*Subsystem Native Functions*/
@@ -144,12 +147,15 @@ private:
 	void OnMessageSent(const FString& MessageString);
 
 	//One-time response to handshaking with Intiface Server
-	UFUNCTION()
+	UFUNCTION(Meta = (Category = "ButtplugUE|Devices"))
 	void OnServerHandshake(const FBPMessageServerInfo& ServerInfo);
 
 	//Templated function for wrapping messages and sending to Intiface.
 	template<typename T, typename... TArgs>
 	int32 PackAndSendMessage(TOptional<FBPInstancedResponseDelegate> ResponseDelegate, TArgs&&... InArgs);
+
+	UPROPERTY()
+	TMap<FGuid, UBPManagedCommand*> ManagedCommands;
 
 public:
 
@@ -248,6 +254,19 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
 	int32 SendRotateCommand(const FBPRotateCommand& Command, FBPInstancedResponseDelegate Response);
+
+	/**/
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices", AdvancedDisplay="UpdatesPerSecond"))
+	FGuid StartPatternCommand(FBPDeviceObject TargetDevice, FBPScalarCommand InCommand, UCurveFloat* InPattern,
+								float InDurationSeconds, int32 UpdatesPerSecond = 10);
+
+	/**/
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
+	void StopPatternCommand(FGuid CommandId);
+
+	/**/
+	UFUNCTION()
+	void OnCommandStopped(FGuid CommandId);
 
 	/*Currently unsupported*/
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices", DeprecatedFunction, DeprecationMessage = "This functionality is not yet fully supported as the appropriate Sensor information is not yet implemented. Unless you have set up your own methods of handling this you should stop."))

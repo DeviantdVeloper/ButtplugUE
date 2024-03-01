@@ -8,17 +8,17 @@ DEFINE_LOG_CATEGORY(LogButtplugUE);
 
 void UBPLogging::Message(UObject* Context, const FString Message, bool bLogOnScreen, FLinearColor Color)
 {
-	BPLog::Message(TOptional<UObject*>(Context), Message, FStringFormatNamedArguments(), bLogOnScreen, Color.ToFColor(false));
+	BPLog::Message(Context, Message, FStringFormatNamedArguments(), bLogOnScreen, Color.ToFColor(false));
 }
 
 void UBPLogging::Warning(UObject* Context, const FString Message, bool bLogOnScreen, FLinearColor Color)
 {
-	BPLog::Warning(TOptional<UObject*>(Context), Message, FStringFormatNamedArguments(), bLogOnScreen, Color.ToFColor(false));
+	BPLog::Warning(Context, Message, FStringFormatNamedArguments(), bLogOnScreen, Color.ToFColor(false));
 }
 
 void UBPLogging::Error(UObject* Context, const FString Message, bool bLogOnScreen, FLinearColor Color)
 {
-	BPLog::Error(TOptional<UObject*>(Context), Message, FStringFormatNamedArguments(), bLogOnScreen, Color.ToFColor(false));
+	BPLog::Error(Context, Message, FStringFormatNamedArguments(), bLogOnScreen, Color.ToFColor(false));
 }
 
 void BPLog::Message(const TOptional<UObject*> Context, const FString Message, FStringFormatNamedArguments Args, bool bLogOnScreen, FColor Color)
@@ -68,12 +68,11 @@ void BPLog::Warning(const TOptional<UObject*> Context, const FString Message, FS
 void BPLog::Error(const TOptional<UObject*> Context, const FString Message, FStringFormatNamedArguments Args, bool bLogOnScreen, FColor Color)
 {
 	FString Log = BPLog::GetFormattedLog(Message, Args);
-	UObject* ContextPtr = *Context.GetPtrOrNull();
 	if (UButtplugUESettings::GetLoggingVerbosity() >= EBPLogVerbosity::Errors)
 	{
-		if (ContextPtr != nullptr)
+		if (Context.IsSet())
 		{
-			UE_LOG(LogButtplugUE, Error, TEXT("%s: %s"), *ContextPtr->GetName(), *Log);
+			UE_LOG(LogButtplugUE, Error, TEXT("%s: %s"), *Context.GetValue()->GetName(), *Log);
 		}
 		else
 		{
@@ -82,7 +81,7 @@ void BPLog::Error(const TOptional<UObject*> Context, const FString Message, FStr
 
 		if (bLogOnScreen)
 		{
-			LogOnScreen(ContextPtr, Log, Color);
+			LogOnScreen(Context.IsSet() ? Context.GetValue() : nullptr, Log, Color);
 		}
 	}
 }
