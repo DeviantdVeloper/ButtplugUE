@@ -8,7 +8,7 @@
 #include "BPLogging.h"
 #include "BPDeviceSubsystem.h"
 
-UBPManagedCommand* UBPManagedCommand::CreateManagedCommand(UObject* Context, FBPDeviceObject TargetDevice, FBPScalarCommand InCommand,
+UBPManagedCommand* UBPManagedCommand::CreateManagedCommand(UObject* Context, FBPDeviceObject TargetDevice, FInstancedStruct InCommand,
 															UCurveFloat* InPattern,  float InDurationSeconds, FGuid InId, int32 UpdatesPerSecond)
 {
 	UBPManagedCommand* Out = NewObject<UBPManagedCommand>(Context);
@@ -33,9 +33,24 @@ void UBPManagedCommand::UpdateDevice()
 	PatternDuration = TimeMax - TimeMin;
 	float NewStrength = Pattern->GetFloatValue(FGenericPlatformMath::Fmod(Runtime, PatternDuration));
 
-	Command.Scalars[0].Scalar = NewStrength;
-
-	GetBP()->SendScalarCommand(Command, FBPInstancedResponseDelegate());
+	if(Command.GetPtr<FBPScalarCommand>() != nullptr)
+	{
+		FBPScalarCommand* SclCmd = Command.GetMutablePtr<FBPScalarCommand>();
+		SclCmd->Scalars[0].Scalar = NewStrength;
+		GetBP()->SendScalarCommand(*SclCmd, FBPInstancedResponseDelegate());
+	}
+	else if (Command.GetPtr<FBPRotateCommand>() != nullptr)
+	{
+		FBPRotateCommand* RotCmd = Command.GetMutablePtr<FBPRotateCommand>();
+		RotCmd->Rotations[0].Speed = NewStrength;
+		GetBP()->SendRotateCommand(*RotCmd, FBPInstancedResponseDelegate());
+	}
+	else if (Command.GetPtr<FBPLinearCommand>() != nullptr)
+	{
+		FBPLinearCommand* LinCmd = Command.GetMutablePtr<FBPLinearCommand>();
+		LinCmd->Vectors[0].Position = NewStrength;
+		GetBP()->SendLinearCommand(*LinCmd, FBPInstancedResponseDelegate());
+	}
 }
 
 void UBPManagedCommand::StopCommand()

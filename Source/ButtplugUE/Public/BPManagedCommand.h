@@ -27,14 +27,14 @@ public:
 
 	FBPOnPatternCommandStopped OnCommandStopped;
 
-	static UBPManagedCommand* CreateManagedCommand(UObject* Context, FBPDeviceObject TargetDevice, FBPScalarCommand InCommand,
+	static UBPManagedCommand* CreateManagedCommand(UObject* Context, FBPDeviceObject TargetDevice, FInstancedStruct InCommand,
 													UCurveFloat* InPattern, float InDurationSeconds, FGuid InId, int32 UpdatesPerSecond = 10);
 	void StopCommand();
 
 protected:
 	
 	FBPDeviceObject Device;
-	FBPScalarCommand Command;
+	FInstancedStruct Command;
 	UCurveFloat* Pattern;
 	float DurationSeconds;
 	float Runtime = 0.0f;

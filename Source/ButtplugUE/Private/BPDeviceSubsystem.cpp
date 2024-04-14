@@ -328,11 +328,27 @@ int32 UBPDeviceSubsystem::SendRotateCommand(const FBPRotateCommand& Command, FBP
 	return PackAndSendMessage<FBPRotateCommand>(Response, Command.DeviceIndex, Command.Rotations);
 }
 
-FGuid UBPDeviceSubsystem::StartPatternCommand(FBPDeviceObject TargetDevice, FBPScalarCommand InCommand, UCurveFloat* InPattern,
+FGuid UBPDeviceSubsystem::StartScalarPatternCommand(FBPDeviceObject TargetDevice, FBPScalarCommand InCommand, UCurveFloat* InPattern,
 												float InDurationSeconds, int32 UpdatesPerSecond)
 {
 	FGuid Out = FGuid::NewGuid();
-	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, InCommand, InPattern, InDurationSeconds, Out, UpdatesPerSecond));
+	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPScalarCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
+	ManagedCommands[Out]->OnCommandStopped.AddDynamic(this, &UBPDeviceSubsystem::OnCommandStopped);
+	return Out;
+}
+
+FGuid UBPDeviceSubsystem::StartRotatePatternCommand(FBPDeviceObject TargetDevice, FBPRotateCommand InCommand, UCurveFloat* InPattern, float InDurationSeconds, int32 UpdatesPerSecond)
+{
+	FGuid Out = FGuid::NewGuid();
+	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPRotateCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
+	ManagedCommands[Out]->OnCommandStopped.AddDynamic(this, &UBPDeviceSubsystem::OnCommandStopped);
+	return Out;
+}
+
+FGuid UBPDeviceSubsystem::StartLinearPatternCommand(FBPDeviceObject TargetDevice, FBPLinearCommand InCommand, UCurveFloat* InPattern, float InDurationSeconds, int32 UpdatesPerSecond)
+{
+	FGuid Out = FGuid::NewGuid();
+	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPLinearCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
 	ManagedCommands[Out]->OnCommandStopped.AddDynamic(this, &UBPDeviceSubsystem::OnCommandStopped);
 	return Out;
 }

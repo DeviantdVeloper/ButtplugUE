@@ -257,8 +257,18 @@ public:
 
 	/**/
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices", AdvancedDisplay="UpdatesPerSecond"))
-	FGuid StartPatternCommand(FBPDeviceObject TargetDevice, FBPScalarCommand InCommand, UCurveFloat* InPattern,
+	FGuid StartScalarPatternCommand(FBPDeviceObject TargetDevice, FBPScalarCommand InCommand, UCurveFloat* InPattern,
 								float InDurationSeconds, int32 UpdatesPerSecond = 10);
+
+	/**/
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices", AdvancedDisplay = "UpdatesPerSecond"))
+	FGuid StartRotatePatternCommand(FBPDeviceObject TargetDevice, FBPRotateCommand InCommand, UCurveFloat* InPattern,
+		float InDurationSeconds, int32 UpdatesPerSecond = 10);
+
+	/**/
+	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices", AdvancedDisplay = "UpdatesPerSecond"))
+	FGuid StartLinearPatternCommand(FBPDeviceObject TargetDevice, FBPLinearCommand InCommand, UCurveFloat* InPattern,
+		float InDurationSeconds, int32 UpdatesPerSecond = 10);
 
 	/**/
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
