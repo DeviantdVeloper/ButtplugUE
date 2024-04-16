@@ -2,40 +2,40 @@
 
 An Unreal Engine integration for the [Buttplug.io](https://buttplug.io/) framework.
 
-If you use this in your project(s), please consider supporting its continued development on my [SubscribeStar](https://subscribestar.adult/deviant-dveloper).
+If you use this in your project(s), please consider supporting its continued development on my [Patreon](https://www.patreon.com/DeviantdVeloper) or [SubscribeStar](https://subscribestar.adult/deviant-dveloper).
 
 ---
+
+## Projects Using this Plugin
+
+Let me know if you want your project featured here!
 
 ## Overview
 
 Buttplug UE is a plugin for the Unreal Engine that implements the [Buttplug.io](https://buttplug.io/) framework for controlling a wide range of *external devices* and other peripherals directly from your game.
 
-Tested with Intiface Central v2.5.1
+It provides both a Blueprint and a C++ interface (via a [Game Instance Subsystem](https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Runtime/Engine/Subsystems/UGameInstanceSubsystem?application_version=5.3)) which allows you to directly manage individual devices, as well as providing basic support for "fire-and-forget" device commands.
+
+Tested with Intiface Central v2.5.6+24
 
 ### Supported Engine Versions
 
-#### Confirmed
-
-- 5.1 - (No example content)
-- 5.2
-- 5.3
-
-#### Unsupported
-
-- <= 5.0 (due to the use of `FInstancedStruct` introduced in 5.1)
+| Engine | Supported | Notes              |
+| ------ | --------- | ------------------ |
+| 5.1    | Yes       | No Example Content |
+| 5.2    | Yes       |                    |
+| 5.3    | Yes       |                    |
+| <= 5.0 | No        |                    |
 
 ### Supported Platforms
 
-#### Confirmed
-
-- Windows (64 bit)
-- Android
-
-#### Unconfirmed (but should, let me know)
-
-- Mac
-- Linux
-- iOS
+| Platform | Supported | Notes       |
+| -------- | --------- | ----------- |
+| Windows  | Yes       | 64bit Only  |
+| Android  | Yes       |             |
+| Linux    | Probably  | Let me know |
+| OSX      | Probably  | Let me know |
+| iOS      | Probably  | Let me know |
 
 ### Architecture
 
@@ -60,6 +60,36 @@ Information about Devices is handled in the form of Structs; this plugin makes h
 The storing and handling of persistent device information is not included in this plugin at this time; this functionality is left to you, the developer, to implement as-needed for your specific use-case.
 
 It is highly recommended to familiarize yourself with the [Buttplug.io specs](https://buttplug-developer-guide.docs.buttplug.io/docs/spec) to have a better understanding of how the different messages and commands work.
+
+### Basics
+
+First you will want to initialize the connection to Intiface
+
+![Calling the Connect node on the BPDeviceSubsystem](./Docs/Images/ConnDisconnIsConn.png)
+
+After this you should check if the connection was successful. And of course remember to Disconnect upon closing your game.
+
+Once you are connected you can request a list of devices from the server:
+
+![Requesting devices from the server](./Docs/Images/ScanningAndDeviceList.png)
+
+Note that the response is an Instanced Struct, and you have to manually tell it what struct type you are looking for, much like casting.
+
+This can be circumvented by binding to the appropriate delegate/callback on the subsystem *propr* to making the request. This was you will recieve a corecrtly typed struct every time.
+
+![Binding to the response to requesting devices from the server](./Docs/Images/BoundDeviceList.png)
+
+Finally, you can now send commands to  the devices in question. Each device struct outlines what commands they are compatible with, and as such you can use this information to know what type of command to send.
+
+![Sending commands to devices](./Docs/Images/SendCommands.png)
+
+This is a single strength command, and as such you will also need to tell it when to stop; sending a strenth of 0 or using the `StopAllDevices` command will achieve this.
+
+A more simple approach is to use the "Pattern Command"
+
+![Sending pattern commands to devices](./Docs/Images/SendPatternCommands.png)
+
+These pattern commands take a Duration and a Float Curve as arguments. The Curve dictates the strength and will loop for the duration, self-ending.
 
 ### Example Procedure
 
@@ -96,7 +126,7 @@ For the fastest start simply open the `Debug_P` map in the ButtplugUE content fo
 
 By default, the ButtplugUE plugin will automatically attempt to connect to a locally running Intiface instance at the default address and port (`127.0.0.1:12345`) so launch Intiface and start it with the defaults and on launch your Unreal instance should connect. Check the log (category `LogButtplugUE`) for messages confirming as such.
 
-You can change these settings in `Project Settings > Plugins > ButtplugUE Settings`. You can also connect to Intiface instances running on the local network, assuming you have a basic network environment.
+You can change these settings in `Project Settings > Plugins > ButtplugUE Settings`. You can also connect to Intiface instances running on the local network, assuming you have a basic network environment; you are not limited to the same machine it is running on.
 
 Next you will want to get a list of devices. This can be achieved either by telling Intiface to start (and stop) scanning via the normal Intiface GUI or by sending the appropriate commands via the `BPDeviceSubsystem`. You can send either `Start Scanning` or `Get Device List`.
 
@@ -113,10 +143,9 @@ The following are features that are not yet implemented, but will be at a later 
 In no particular order:
 
 - Sensor Support.
-- Pre-programmed device commands, eg pulsing, ramping, fire-and-forget durations.
-    - Custom curve support.
+- Pre-programmed device commands, eg pulsing, ramping, fire-and-forget durations. `Intial Implementation Done`
+    - Custom curve support. `Somewhat Implemented`
 - Further abstraction from command types, simplified developer front-end.
-- Support for multiple Intiface connections (because why not?)
 - Double check if there are any replication implications from using `UGameInstanceSubsystem` (spoiler, there are).
     - This might mean moving (or duplicating) the behaviour to a `UObject`, thereby making replication the responsibility of you, the developer.
 
@@ -128,6 +157,6 @@ In no particular order:
 
 ## Support & Supporting
 
-If you use this in your project(s), please consider supporting its continued development on my [SubscribeStar](https://subscribestar.adult/deviant-dveloper), as well as that of the official [Buttplug.io](https://www.patreon.com/qdot) development.
+If you use this in your project(s), please consider supporting its continued development on my [Patreon](https://www.patreon.com/DeviantdVeloper) or [SubscribeStar](https://subscribestar.adult/deviant-dveloper), as well as that of the official [Buttplug.io](https://www.patreon.com/qdot) development.
 
 You can contact me here, on [Twitter/X](https://twitter.com/DeviantDveloper), or Discord (\_ddev\_).
