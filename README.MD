@@ -75,7 +75,7 @@ Once you are connected you can tell the server to start, then stop scanning for 
 
 Note that the response is an Instanced Struct, and you have to manually tell it what struct type you are looking for, much like casting.
 
-This can be circumvented by binding to the appropriate delegate/callback on the subsystem *prior* to making the request. This was you will recieve a corecrtly typed struct every time.
+This can be circumvented by binding to the appropriate delegate/callback on the subsystem *prior* to making the request. This way you will recieve a correctly typed struct every time.
 
 ![Binding to the response to requesting devices from the server](./Docs/Images/BoundDeviceList.png)
 
@@ -83,9 +83,9 @@ Finally, you can now send commands to  the devices in question. Each device stru
 
 ![Sending commands to devices](./Docs/Images/SendCommands.png)
 
-This is a single strength command, and as such you will also need to tell it when to stop; sending a strenth of 0 or using the `StopAllDevices` command will achieve this.
+This is a single command, and as such you will also need to tell it when to stop; sending a strenth of 0 or using the `StopAllDevices` command will achieve this.
 
-A more simple approach is to use the "Pattern Command"
+A simpler approach is to use the "Pattern Command"
 
 ![Sending pattern commands to devices](./Docs/Images/SendPatternCommands.png)
 
