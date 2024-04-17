@@ -69,13 +69,13 @@ First you will want to initialize the connection to Intiface
 
 After this you should check if the connection was successful. And of course remember to Disconnect upon closing your game.
 
-Once you are connected you can request a list of devices from the server:
+Once you are connected you can tell the server to start, then stop scanning for devices, and then request a list of devices:
 
 ![Requesting devices from the server](./Docs/Images/ScanningAndDeviceList.png)
 
 Note that the response is an Instanced Struct, and you have to manually tell it what struct type you are looking for, much like casting.
 
-This can be circumvented by binding to the appropriate delegate/callback on the subsystem *propr* to making the request. This was you will recieve a corecrtly typed struct every time.
+This can be circumvented by binding to the appropriate delegate/callback on the subsystem *prior* to making the request. This was you will recieve a corecrtly typed struct every time.
 
 ![Binding to the response to requesting devices from the server](./Docs/Images/BoundDeviceList.png)
 
