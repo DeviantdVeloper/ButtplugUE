@@ -25,6 +25,7 @@ Tested with Intiface Central v2.5.6+24
 | 5.1    | Yes       | No Example Content |
 | 5.2    | Yes       |                    |
 | 5.3    | Yes       |                    |
+| 5.4    | Yes       |                    |
 | <= 5.0 | No        |                    |
 
 ### Supported Platforms
