@@ -198,14 +198,14 @@ public:
 	@param Response		The response delegate for this specific message, fires when a response is received. Struct type is FBPMessageStatusOk
 	*/
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 StopDevice(const FBPDeviceObject& Device, FBPInstancedResponseDelegate Response);
+	int32 StopDevice(const FBPDeviceObject& Device, FBPInstancedResponseDelegate Response, bool bStopPatterns = true);
 
 	/* Request Intiface to stop activity on all devices.
 	
 	@param Response		The response delegate for this specific message, fires when a response is received. Struct type is FBPMessageStatusOk
 	*/
 	UFUNCTION(BlueprintCallable, meta = (Category = "ButtplugUE|Devices"))
-	int32 StopAllDevices(FBPInstancedResponseDelegate Response);
+	int32 StopAllDevices(FBPInstancedResponseDelegate Response, bool bStopPatterns = true);
 
 	/* Request Intiface to start scaning for new devices. Remember to tell it to stop as well.
 		Intiface will respond with an FBPMessageStatusOk then start scanning.

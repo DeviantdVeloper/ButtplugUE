@@ -235,6 +235,16 @@ public:
 		return FString::Format(TEXT("{\"DeviceName\": \"{DeviceName}\", \"DeviceIndex\": {DeviceIndex}, \"DeviceMessageTimingGap\": {DeviceMessageTimingGap}, \"DeviceDisplayName\": \"{DeviceDisplayName}\", \"DeviceMessages\": {DeviceMessages}}"), Args);
 	}
 
+	bool operator==(const FBPDeviceObject& Other) const
+	{
+		return DeviceIndex == Other.DeviceIndex;
+	}
+
+	bool operator==(const int32 Index) const
+	{
+		return DeviceIndex == Index;
+	}
+
 };
 
 //Deifnition of a Scalar component of a device.
@@ -1330,11 +1340,26 @@ public:
 	
 	/*For packaging up a message of type T, optional context for logging purposes*/
 	template<typename T>
-	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, T& Message);
+	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, T& Message)
+	{
+		FInstancedStruct RawMessage = FInstancedStruct::Make<T>(Message);
+		FBPMessagePacket Out = FBPMessagePacket();
+		Out.Messages.Add(RawMessage);
+		return Out;
+	};
 
 	/*For packaging up an array of messages of type T, optional context for logging purposes*/
 	template<typename T>
-	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, TArray<T> Message);
+	static FBPMessagePacket PackageMessage(const TOptional<UObject*> Context, TArray<T> Message)
+	{
+		FBPMessagePacket Out = FBPMessagePacket();
+		for (const T& Msg : Message)
+		{
+			FInstancedStruct RawMessage = FInstancedStruct::Make<T>(Msg);
+			Out.Messages.Add(RawMessage);
+		}
+		return Out;
+	};
 
 	/*For converting a received JSON from Intiface into a struct as defined in this header*/
 	static TArray<FInstancedStruct> DeserializeMessage(const TOptional<UObject*> Context, const FString& Message);

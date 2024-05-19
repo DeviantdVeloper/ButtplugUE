@@ -56,8 +56,13 @@ void UBPManagedCommand::UpdateDevice()
 void UBPManagedCommand::StopCommand()
 {
 	bActive = false;
-	GetBP()->StopDevice(Device, FBPInstancedResponseDelegate());
+	GetBP()->StopDevice(Device, FBPInstancedResponseDelegate(), false);
 	OnCommandStopped.Broadcast(Id);
+}
+
+FBPDeviceObject UBPManagedCommand::GetDevice() const
+{
+	return Device;
 }
 
 UBPDeviceSubsystem* UBPManagedCommand::GetBP() const

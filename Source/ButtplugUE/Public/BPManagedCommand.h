@@ -31,6 +31,8 @@ public:
 													UCurveFloat* InPattern, float InDurationSeconds, FGuid InId, int32 UpdatesPerSecond = 10);
 	void StopCommand();
 
+	FBPDeviceObject GetDevice() const;
+
 protected:
 	
 	FBPDeviceObject Device;

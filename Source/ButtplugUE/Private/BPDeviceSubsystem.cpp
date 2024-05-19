@@ -258,22 +258,39 @@ int32 UBPDeviceSubsystem::RequestDeviceList(FBPInstancedResponseDelegate Respons
 	return PackAndSendMessage<FBPRequestDeviceList>(Response);
 }
 
-int32 UBPDeviceSubsystem::StopDevice(const FBPDeviceObject& Device, FBPInstancedResponseDelegate Response)
+int32 UBPDeviceSubsystem::StopDevice(const FBPDeviceObject& Device, FBPInstancedResponseDelegate Response, bool bStopPatterns /*= false*/)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
+	if(bStopPatterns)
+	{
+		for(const TPair<FGuid, UBPManagedCommand*> Command : ManagedCommands)
+		{
+			if(Command.Value->GetDevice() == Device)
+			{
+				Command.Value->StopCommand();
+			}
+		}
+	}
 	return PackAndSendMessage<FBPStopDeviceCmd>(Response, Device.DeviceIndex);
 }
 
-int32 UBPDeviceSubsystem::StopAllDevices(FBPInstancedResponseDelegate Response)
+int32 UBPDeviceSubsystem::StopAllDevices(FBPInstancedResponseDelegate Response, bool bStopPatterns /*= true*/)
 {
 	if (!IsConnected())
 	{
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
+	}
+	if (bStopPatterns)
+	{
+		for (const TPair<FGuid, UBPManagedCommand*> Command : ManagedCommands)
+		{
+			Command.Value->StopCommand();
+		}
 	}
 	return PackAndSendMessage<FBPStopAllDevices>(Response);
 }
@@ -365,6 +382,7 @@ void UBPDeviceSubsystem::StopPatternCommand(FGuid CommandId)
 
 void UBPDeviceSubsystem::OnCommandStopped(FGuid CommandId)
 {
+	ManagedCommands[CommandId]->MarkAsGarbage();
 	ManagedCommands.Remove(CommandId);
 }
 

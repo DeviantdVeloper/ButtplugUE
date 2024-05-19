@@ -7,27 +7,6 @@
 #include "Serialization/JsonReader.h"
 #include "Dom/JsonObject.h"
 
-template<typename T>
-FBPMessagePacket UBPTypes::PackageMessage(const TOptional<UObject*> Context, T& Message)
-{
-	FInstancedStruct RawMessage = FInstancedStruct::Make<T>(Message);
-	FBPMessagePacket Out = FBPMessagePacket();
-	Out.Messages.Add(RawMessage);
-	return Out;
-}
-
-template<typename T>
-FBPMessagePacket UBPTypes::PackageMessage(const TOptional<UObject*> Context, TArray<T> Message)
-{
-	FBPMessagePacket Out = FBPMessagePacket();
-	for (const T& Msg : Message)
-	{
-		FInstancedStruct RawMessage = FInstancedStruct::Make<T>(Msg);
-		Out.Messages.Add(RawMessage);
-	}
-	return Out;
-}
-
 TArray<FInstancedStruct> UBPTypes::DeserializeMessage(const TOptional<UObject*> Context, const FString& Message)
 {
 	TArray<FInstancedStruct> Out;
@@ -35,7 +14,7 @@ TArray<FInstancedStruct> UBPTypes::DeserializeMessage(const TOptional<UObject*> 
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(*CleanedMessage);
 	FJsonSerializer::Deserialize(JsonReader, JsonObject);
-	TArray<TSharedPtr<FJsonValue>> Messages = JsonObject->GetArrayField("Messages"); //get the array of messages
+	TArray<TSharedPtr<FJsonValue>> Messages = JsonObject->GetArrayField(TEXT("Messages")); //get the array of messages
 
 	for(const TSharedPtr<FJsonValue>& Msg : Messages)
 	{
