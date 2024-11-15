@@ -33,6 +33,8 @@ public:
 
 	FBPDeviceObject GetDevice() const;
 
+	FBPDeviceObject GetDevice() const;
+
 protected:
 	
 	FBPDeviceObject Device;

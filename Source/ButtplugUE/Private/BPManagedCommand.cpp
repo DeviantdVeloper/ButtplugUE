@@ -68,6 +68,11 @@ FBPDeviceObject UBPManagedCommand::GetDevice() const
 	return Device;
 }
 
+FBPDeviceObject UBPManagedCommand::GetDevice() const
+{
+	return Device;
+}
+
 UBPDeviceSubsystem* UBPManagedCommand::GetBP() const
 {
 	return (UBPDeviceSubsystem*)GetOuter();
