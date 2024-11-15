@@ -267,11 +267,14 @@ int32 UBPDeviceSubsystem::StopDevice(const FBPDeviceObject& Device, FBPInstanced
 	}
 	if(bStopPatterns)
 	{
-		for(const TPair<FGuid, UBPManagedCommand*> Command : ManagedCommands)
+		//for(const TPair<FGuid, UBPManagedCommand*> Command : ManagedCommands)
+		TArray<UBPManagedCommand*> Commands;
+		ManagedCommands.GenerateValueArray(Commands);
+		for(int i = 0; i < Commands.Num(); i++)
 		{
-			if(Command.Value->GetDevice() == Device)
+			if(Commands[i]->GetDevice() == Device)
 			{
-				Command.Value->StopCommand();
+				Commands[i]->StopCommand();
 			}
 		}
 	}
@@ -289,8 +292,11 @@ int32 UBPDeviceSubsystem::StopAllDevices(FBPInstancedResponseDelegate Response, 
 	{
 		for (const TPair<FGuid, UBPManagedCommand*> Command : ManagedCommands)
 		{
-			Command.Value->StopCommand();
+			//Do not broadcast on stop completion to avoid changing the array while we are iterating through it.
+			Command.Value->StopCommand(false);
+			Command.Value->MarkAsGarbage();
 		}
+		ManagedCommands.Empty();
 	}
 	return PackAndSendMessage<FBPStopAllDevices>(Response);
 }

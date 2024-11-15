@@ -53,11 +53,14 @@ void UBPManagedCommand::UpdateDevice()
 	}
 }
 
-void UBPManagedCommand::StopCommand()
+void UBPManagedCommand::StopCommand(bool bBroadcastStop /*= true*/)
 {
 	bActive = false;
 	GetBP()->StopDevice(Device, FBPInstancedResponseDelegate(), false);
-	OnCommandStopped.Broadcast(Id);
+	if(bBroadcastStop)
+	{
+		OnCommandStopped.Broadcast(Id);
+	}
 }
 
 FBPDeviceObject UBPManagedCommand::GetDevice() const
