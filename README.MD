@@ -1,5 +1,7 @@
 # Buttplug UE
 
+![ButtplugUE Icon](./Resources/Icon128.png)
+
 An Unreal Engine integration for the [Buttplug.io](https://buttplug.io/) framework.
 
 If you use this in your project(s), please consider supporting its continued development on my [Patreon](https://www.patreon.com/DeviantdVeloper) or [SubscribeStar](https://subscribestar.adult/deviant-dveloper).
@@ -16,17 +18,18 @@ Buttplug UE is a plugin for the Unreal Engine that implements the [Buttplug.io](
 
 It provides both a Blueprint and a C++ interface (via a [Game Instance Subsystem](https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Runtime/Engine/Subsystems/UGameInstanceSubsystem?application_version=5.3)) which allows you to directly manage individual devices, as well as providing basic support for "fire-and-forget" device commands.
 
-Tested with Intiface Central v2.5.6+24
+Tested with Intiface Central v2.6.4+30
 
 ### Supported Engine Versions
 
-| Engine | Supported | Notes              |
-| ------ | --------- | ------------------ |
-| 5.1    | Yes       | No Example Content |
-| 5.2    | Yes       |                    |
-| 5.3    | Yes       |                    |
-| 5.4    | Yes       |                    |
-| <= 5.0 | No        |                    |
+| Engine | Supported        | Notes                               |
+| ------ | ---------------- | ----------------------------------- |
+| <= 5.0 | No               |                                     |
+| 5.1    | Deprecated       | Check Releases, No Example Content  |
+| 5.2    | Deprecated       | Check Releases                      |
+| 5.3    | Yes              | No Example Content (check releases) |
+| 5.4    | Yes              |                                     |
+| 5.5    | Yes              |                                     |
 
 ### Supported Platforms
 
@@ -84,13 +87,17 @@ Finally, you can now send commands to  the devices in question. Each device stru
 
 ![Sending commands to devices](./Docs/Images/SendCommands.png)
 
-This is a single command, and as such you will also need to tell it when to stop; sending a strenth of 0 or using the `StopAllDevices` command will achieve this.
+This is a single command, and as such you will also need to tell it when to stop; sending a strength of 0 or using one of the Stop commands will achieve this.
+
+![Sending stop commands to devices](./Docs/Images/StopCommands.png)
+
+These functions behave as you would expect: stopping a given device, or stopping all devices (wise to do on quit, close, exit, etc). They optionally also can either ignore or include currently ongoing Pattern Commands, as these are handled locally in the plugin.
 
 A simpler approach is to use the "Pattern Command"
 
 ![Sending pattern commands to devices](./Docs/Images/SendPatternCommands.png)
 
-These pattern commands take a Duration and a Float Curve as arguments. The Curve dictates the strength and will loop for the duration, self-ending.
+These pattern commands take a Duration and a Float Curve as arguments. The Curve dictates the strength and will loop for the duration, self-ending. These essentially sample the given curve at the set rate, sending updates to the device per-update.
 
 ### Example Procedure
 
@@ -160,4 +167,4 @@ In no particular order:
 
 If you use this in your project(s), please consider supporting its continued development on my [Patreon](https://www.patreon.com/DeviantdVeloper) or [SubscribeStar](https://subscribestar.adult/deviant-dveloper), as well as that of the official [Buttplug.io](https://www.patreon.com/qdot) development.
 
-You can contact me here, on [Twitter/X](https://twitter.com/DeviantDveloper), or Discord (\_ddev\_).
+You can contact me here, on [Bluesky](https://bsky.app/profile/ddev.games), or Discord (\_ddev\_).

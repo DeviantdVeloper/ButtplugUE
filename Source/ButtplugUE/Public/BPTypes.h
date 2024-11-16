@@ -3,9 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
+
 #include "Kismet/BlueprintFunctionLibrary.h"
 
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 #include "InstancedStruct.h"
+#else
+#include "StructUtils/InstancedStruct.h"
+#endif
+
 #include "JsonObjectConverter.h"
 #include "Engine/DataTable.h"
 

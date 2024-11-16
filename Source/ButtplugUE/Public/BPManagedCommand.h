@@ -29,7 +29,7 @@ public:
 
 	static UBPManagedCommand* CreateManagedCommand(UObject* Context, FBPDeviceObject TargetDevice, FInstancedStruct InCommand,
 													UCurveFloat* InPattern, float InDurationSeconds, FGuid InId, int32 UpdatesPerSecond = 10);
-	void StopCommand();
+	void StopCommand(bool bBroadcastStop = true);
 
 	FBPDeviceObject GetDevice() const;
 
