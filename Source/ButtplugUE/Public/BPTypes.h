@@ -429,7 +429,7 @@ struct FBPMessagePacket
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/ButtplugUE.FBPMessageBase"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Category = "ButtplugUE|Types", BaseStruct = "/Script/ButtplugUE.FBPMessageBase"))
 	TArray<FInstancedStruct> Messages;
 
 	FBPMessagePacket()
