@@ -2,6 +2,8 @@
 
 #include "BPLogging.h"
 
+#include "Engine/Engine.h"
+
 #include "ButtplugUESettings.h"
 
 DEFINE_LOG_CATEGORY(LogButtplugUE);
