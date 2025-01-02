@@ -4,6 +4,8 @@
 
 #include "WebSocketsModule.h"
 #include "IWebSocketsManager.h"
+#include "TimerManager.h"
+#include "Engine/World.h"
 
 #include "ButtplugUESettings.h"
 #include "BPLogging.h"
