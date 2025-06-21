@@ -28,7 +28,6 @@ public class ButtplugUE : ModuleRules
 				"Core",
                 "Json",
 				"JsonUtilities",
-                "StructUtils",
                 "DeveloperSettings",
 				"WebSockets"
 				// ... add other public dependencies that you statically link with here ...
@@ -42,8 +41,7 @@ public class ButtplugUE : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
-				"StructUtils"
+				"SlateCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

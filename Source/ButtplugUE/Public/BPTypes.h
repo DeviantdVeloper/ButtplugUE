@@ -16,7 +16,7 @@
 #include "JsonObjectConverter.h"
 #include "Engine/DataTable.h"
 
-#include "BPlogging.h"
+#include "BPLogging.h"
 
 #include "BPTypes.generated.h"
 
