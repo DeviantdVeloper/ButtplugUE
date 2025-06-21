@@ -27,9 +27,10 @@ Tested with Intiface Central v2.6.4+30
 | <= 5.0 | No               |                                     |
 | 5.1    | Deprecated       | Check Releases, No Example Content  |
 | 5.2    | Deprecated       | Check Releases                      |
-| 5.3    | Yes              | No Example Content (check releases) |
-| 5.4    | Yes              |                                     |
-| 5.5    | Yes              |                                     |
+| 5.3    | Deprecated       | No Example Content (Check Releases) |
+| 5.4    | Deprecated       | Check Releases                      |
+| 5.5    | Deprecated       | Check Releases                      |
+| 5.6    | Yes              |                                     |
 
 ### Supported Platforms
 
@@ -40,6 +41,10 @@ Tested with Intiface Central v2.6.4+30
 | Linux    | Probably  | Let me know |
 | OSX      | Probably  | Let me know |
 | iOS      | Probably  | Let me know |
+
+### Projects Using This
+
+Get in touch if you would like your project listed here.
 
 ### Architecture
 
