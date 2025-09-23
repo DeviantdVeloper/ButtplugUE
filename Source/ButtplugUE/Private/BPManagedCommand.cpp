@@ -5,17 +5,17 @@
 #include "Curves/CurveFloat.h"
 #include "GenericPlatform/GenericPlatformMath.h"
 
-#include "BPLogging.h"
 #include "BPDeviceSubsystem.h"
 
-UBPManagedCommand* UBPManagedCommand::CreateManagedCommand(UObject* Context, FBPDeviceObject TargetDevice, FInstancedStruct InCommand,
+TSharedPtr<FBPManagedCommand> FBPManagedCommand::CreateManagedCommand(UBPDeviceSubsystem* Subsystem, FBPDeviceObject TargetDevice, FInstancedStruct InCommand,
 															UCurveFloat* InPattern,  float InDurationSeconds, FGuid InId, int32 UpdatesPerSecond)
 {
-	UBPManagedCommand* Out = NewObject<UBPManagedCommand>(Context);
+	auto Out = MakeShared<FBPManagedCommand>();
 
+	Out->Subsystem = Subsystem;
 	Out->Device = TargetDevice;
 	Out->Command = InCommand;
-	Out->Pattern = InPattern;
+	Out->Pattern.Reset(InPattern);
 	Out->DurationSeconds = InDurationSeconds;
 	Out->Id = InId;
 
@@ -26,8 +26,18 @@ UBPManagedCommand* UBPManagedCommand::CreateManagedCommand(UObject* Context, FBP
 	return Out;
 }
 
-void UBPManagedCommand::UpdateDevice()
+void FBPManagedCommand::UpdateDevice()
 {
+	if (!Pattern)
+	{
+		return;
+	}
+
+	if (!Subsystem.IsValid())
+	{
+		return;
+	}
+
 	float TimeMin, TimeMax, PatternDuration;
 	Pattern->GetTimeRange(TimeMin, TimeMax);
 	PatternDuration = TimeMax - TimeMin;
@@ -37,43 +47,43 @@ void UBPManagedCommand::UpdateDevice()
 	{
 		FBPScalarCommand* SclCmd = Command.GetMutablePtr<FBPScalarCommand>();
 		SclCmd->Scalars[0].Scalar = NewStrength;
-		GetBP()->SendScalarCommand(*SclCmd, FBPInstancedResponseDelegate());
+		Subsystem->SendScalarCommand(*SclCmd, FBPInstancedResponseDelegate());
 	}
 	else if (Command.GetPtr<FBPRotateCommand>() != nullptr)
 	{
 		FBPRotateCommand* RotCmd = Command.GetMutablePtr<FBPRotateCommand>();
 		RotCmd->Rotations[0].Speed = NewStrength;
-		GetBP()->SendRotateCommand(*RotCmd, FBPInstancedResponseDelegate());
+		Subsystem->SendRotateCommand(*RotCmd, FBPInstancedResponseDelegate());
 	}
 	else if (Command.GetPtr<FBPLinearCommand>() != nullptr)
 	{
 		FBPLinearCommand* LinCmd = Command.GetMutablePtr<FBPLinearCommand>();
 		LinCmd->Vectors[0].Position = NewStrength;
-		GetBP()->SendLinearCommand(*LinCmd, FBPInstancedResponseDelegate());
+		Subsystem->SendLinearCommand(*LinCmd, FBPInstancedResponseDelegate());
 	}
 }
 
-void UBPManagedCommand::StopCommand(bool bBroadcastStop /*= true*/)
+void FBPManagedCommand::StopCommand(bool bBroadcastStop /*= true*/)
 {
 	bActive = false;
-	GetBP()->StopDevice(Device, FBPInstancedResponseDelegate(), false);
+
+	if (Subsystem.IsValid())
+	{
+		Subsystem->StopDevice(Device, FBPInstancedResponseDelegate(), false);
+	}
+
 	if(bBroadcastStop)
 	{
 		OnCommandStopped.Broadcast(Id);
 	}
 }
 
-FBPDeviceObject UBPManagedCommand::GetDevice() const
+FBPDeviceObject FBPManagedCommand::GetDevice() const
 {
 	return Device;
 }
 
-UBPDeviceSubsystem* UBPManagedCommand::GetBP() const
-{
-	return (UBPDeviceSubsystem*)GetOuter();
-}
-
-void UBPManagedCommand::Tick(float DeltaTime)
+void FBPManagedCommand::Tick(float DeltaTime)
 {
 	if (!bActive)
 	{
@@ -96,27 +106,27 @@ void UBPManagedCommand::Tick(float DeltaTime)
 	}
 }
 
-ETickableTickType UBPManagedCommand::GetTickableTickType() const
+ETickableTickType FBPManagedCommand::GetTickableTickType() const
 {
 	return ETickableTickType::Conditional;
 }
 
-TStatId UBPManagedCommand::GetStatId() const
+TStatId FBPManagedCommand::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(FMyTickableThing, STATGROUP_Tickables);
 }
 
-bool UBPManagedCommand::IsTickable() const
+bool FBPManagedCommand::IsTickable() const
 {
 	return bActive;
 }
 
-bool UBPManagedCommand::IsTickableWhenPaused() const
+bool FBPManagedCommand::IsTickableWhenPaused() const
 {
 	return false;
 }
 
-bool UBPManagedCommand::IsTickableInEditor() const
+bool FBPManagedCommand::IsTickableInEditor() const
 {
 	return false;
 }

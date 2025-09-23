@@ -3,50 +3,39 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "Tickable.h"
 
 #include "BPTypes.h"
 
-#include "BPManagedCommand.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBPOnPatternCommandStopped, FGuid, PatternId);
-
 class UCurveFloat;
 class UBPDeviceSubsystem;
 
-/**
- * 
- */
-UCLASS()
-class BUTTPLUGUE_API UBPManagedCommand : public UObject, public FTickableGameObject
+class BUTTPLUGUE_API FBPManagedCommand : public FTickableGameObject, public FNoncopyable
 {
-	GENERATED_BODY()
-
 public:
 
-	FBPOnPatternCommandStopped OnCommandStopped;
+	TMulticastDelegate<void(const FGuid)> OnCommandStopped;
 
-	static UBPManagedCommand* CreateManagedCommand(UObject* Context, FBPDeviceObject TargetDevice, FInstancedStruct InCommand,
+	static TSharedPtr<FBPManagedCommand> CreateManagedCommand(UBPDeviceSubsystem* Subsystem, FBPDeviceObject TargetDevice, FInstancedStruct InCommand,
 													UCurveFloat* InPattern, float InDurationSeconds, FGuid InId, int32 UpdatesPerSecond = 10);
 	void StopCommand(bool bBroadcastStop = true);
 
 	FBPDeviceObject GetDevice() const;
 
 protected:
+
+	TWeakObjectPtr<UBPDeviceSubsystem> Subsystem;
 	
 	FBPDeviceObject Device;
 	FInstancedStruct Command;
-	UCurveFloat* Pattern;
-	float DurationSeconds;
+	TStrongObjectPtr<UCurveFloat> Pattern;
+	float DurationSeconds = 0;
 	float Runtime = 0.0f;
 	FGuid Id;
 
 	bool bActive = false;
 
 	void UpdateDevice();
-
-	UBPDeviceSubsystem* GetBP() const;
 
 public:
 

@@ -267,10 +267,10 @@ int32 UBPDeviceSubsystem::StopDevice(const FBPDeviceObject& Device, FBPInstanced
 		BPLog::Error(this, "Tried to send message while not connected!");
 		return -1;
 	}
+
 	if(bStopPatterns)
 	{
-		//for(const TPair<FGuid, UBPManagedCommand*> Command : ManagedCommands)
-		TArray<UBPManagedCommand*> Commands;
+		TArray<TSharedPtr<FBPManagedCommand>> Commands;
 		ManagedCommands.GenerateValueArray(Commands);
 		for(int i = 0; i < Commands.Num(); i++)
 		{
@@ -292,11 +292,10 @@ int32 UBPDeviceSubsystem::StopAllDevices(FBPInstancedResponseDelegate Response, 
 	}
 	if (bStopPatterns)
 	{
-		for (const TPair<FGuid, UBPManagedCommand*> Command : ManagedCommands)
+		for (const auto& Command : ManagedCommands)
 		{
 			//Do not broadcast on stop completion to avoid changing the array while we are iterating through it.
 			Command.Value->StopCommand(false);
-			Command.Value->MarkAsGarbage();
 		}
 		ManagedCommands.Empty();
 	}
@@ -357,24 +356,24 @@ FGuid UBPDeviceSubsystem::StartScalarPatternCommand(FBPDeviceObject TargetDevice
 												float InDurationSeconds, int32 UpdatesPerSecond)
 {
 	FGuid Out = FGuid::NewGuid();
-	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPScalarCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
-	ManagedCommands[Out]->OnCommandStopped.AddDynamic(this, &UBPDeviceSubsystem::OnCommandStopped);
+	ManagedCommands.Add(Out, FBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPScalarCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
+	ManagedCommands[Out]->OnCommandStopped.AddUObject(this, &UBPDeviceSubsystem::OnCommandStopped);
 	return Out;
 }
 
 FGuid UBPDeviceSubsystem::StartRotatePatternCommand(FBPDeviceObject TargetDevice, FBPRotateCommand InCommand, UCurveFloat* InPattern, float InDurationSeconds, int32 UpdatesPerSecond)
 {
 	FGuid Out = FGuid::NewGuid();
-	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPRotateCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
-	ManagedCommands[Out]->OnCommandStopped.AddDynamic(this, &UBPDeviceSubsystem::OnCommandStopped);
+	ManagedCommands.Add(Out, FBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPRotateCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
+	ManagedCommands[Out]->OnCommandStopped.AddUObject(this, &UBPDeviceSubsystem::OnCommandStopped);
 	return Out;
 }
 
 FGuid UBPDeviceSubsystem::StartLinearPatternCommand(FBPDeviceObject TargetDevice, FBPLinearCommand InCommand, UCurveFloat* InPattern, float InDurationSeconds, int32 UpdatesPerSecond)
 {
 	FGuid Out = FGuid::NewGuid();
-	ManagedCommands.Add(Out, UBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPLinearCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
-	ManagedCommands[Out]->OnCommandStopped.AddDynamic(this, &UBPDeviceSubsystem::OnCommandStopped);
+	ManagedCommands.Add(Out, FBPManagedCommand::CreateManagedCommand(this, TargetDevice, FInstancedStruct::Make<FBPLinearCommand>(InCommand), InPattern, InDurationSeconds, Out, UpdatesPerSecond));
+	ManagedCommands[Out]->OnCommandStopped.AddUObject(this, &UBPDeviceSubsystem::OnCommandStopped);
 	return Out;
 }
 
@@ -390,7 +389,6 @@ void UBPDeviceSubsystem::StopPatternCommand(FGuid CommandId)
 
 void UBPDeviceSubsystem::OnCommandStopped(FGuid CommandId)
 {
-	ManagedCommands[CommandId]->MarkAsGarbage();
 	ManagedCommands.Remove(CommandId);
 }
 
