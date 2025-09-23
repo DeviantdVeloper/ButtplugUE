@@ -20,6 +20,8 @@
 
 #include "BPTypes.generated.h"
 
+class UBPDeviceSubsystem;
+
 /** This class contains all the declarations for enums and structs
 * They are used to communicate with Intiface Central, handling serialization of JSON messages in both directions.
 * Intiface's JSON structure is a little different to how Unreal handles it, so we are manually declaring our own Serialization method
@@ -416,6 +418,8 @@ public:
 	{
 		return Id;
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem& Subsystem) const {}
 };
 
 /*A wrapper for sending one or multiple messages in a single packet.
@@ -494,6 +498,7 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition for "Error" message from Server.
@@ -537,6 +542,7 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"ErrorMessage\": \"{ErrorMessage}\", \"ErrorCode\": {ErrorCode}}"), Args);
 	}
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition for simple Ping message to Server.
@@ -568,6 +574,7 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition for Server info Request to Server.
@@ -611,6 +618,7 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"ClientName\": \"{ClientName}\", \"MessageVersion\": {MessageVersion}}"), Args);
 	}
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Server Info message from Server.
@@ -667,6 +675,7 @@ public:
 		return *Out;
 	}
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Start Scaning command to Server.
@@ -697,6 +706,8 @@ public:
 		Args.Add(TEXT("Id"), Id);
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Stop Scanning command to Server
@@ -727,6 +738,8 @@ public:
 		Args.Add(TEXT("Id"), Id);
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Scanning Finished message from Server.
@@ -757,6 +770,8 @@ public:
 		Args.Add(TEXT("Id"), Id);
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of RequestDeviceList request to Server.
@@ -787,6 +802,8 @@ public:
 		Args.Add(TEXT("Id"), Id);
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of DeviceList message from Server.
@@ -837,6 +854,7 @@ public:
 		return FString::Format(TEXT("{\"Id\": {Id}, \"Devices\": {Devices}}"), Args);
 	}
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of DeviceAdded message from Server.
@@ -873,6 +891,8 @@ public:
 		Args.Add(TEXT("Devices"), Device.ToString());
 		return FString::Format(TEXT("{\"Id\": {Id}, {Device}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of DeviceRemoved message from Server.
@@ -909,6 +929,8 @@ public:
 		Args.Add(TEXT("DeviceIndex"), DeviceIndex);
 		return FString::Format(TEXT("{\"Id\": {Id}, \"DeviceIndex\": {DeviceIndex}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of StopDevice command to Server.
@@ -945,6 +967,8 @@ public:
 		Args.Add(TEXT("DeviceIndex"), DeviceIndex);
 		return FString::Format(TEXT("{\"Id\": {Id}, \"DeviceIndex\": {DeviceIndex}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of StopAllDevices command to Server.
@@ -975,6 +999,8 @@ public:
 		Args.Add(TEXT("Id"), Id);
 		return FString::Format(TEXT("{\"Id\": {Id}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Scalar Command message to Server. Can wrap multiple commands to a single device.
@@ -1030,6 +1056,8 @@ public:
 
 		return FString::Format(TEXT("{\"Id\": {Id}, \"DeviceIndex\": {DeviceIndex}, \"Scalars\": {Scalars}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Linear Command message to Server. Can wrap multiple commands to a single device.
@@ -1085,6 +1113,8 @@ public:
 
 		return FString::Format(TEXT("{\"Id\": {Id}, \"DeviceIndex\": {DeviceIndex}, \"Vectors\": {Vectors}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Rotate Command message to Server. Can wrap multiple commands to a single device.
@@ -1140,6 +1170,8 @@ public:
 
 		return FString::Format(TEXT("{\"Id\": {Id}, \"DeviceIndex\": {DeviceIndex}, \"Rotations\": {Rotations}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Base struct type for Sensor Messages to and from Server. Currently unsupported.
@@ -1189,6 +1221,8 @@ public:
 
 		return FString::Format(TEXT("{\"Id\": {Id}, \"DeviceIndex\": {DeviceIndex}, \"SensorIndex\": {SensorIndex}, \"SensorType\": \"{SensorType}\"}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Read Sensor request to Server. Currently unsupported.
@@ -1219,6 +1253,7 @@ public:
 
 	virtual ~FBPSensorReadCommand() = default;
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of SensorReading message from Server. Currently unsupported.
@@ -1275,6 +1310,8 @@ public:
 
 		return FString::Format(TEXT("{\"Id\": {Id}, \"DeviceIndex\": {DeviceIndex}, \"SensorIndex\": {SensorIndex}, \"SensorType\": \"{SensorType}\", \"Data\": {Data}}"), Args);
 	}
+
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of SensorSubscription command to server. Current unsupported.
@@ -1305,6 +1342,7 @@ public:
 
 	virtual ~FBPSensorSubscribeCommand() = default;
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 //Definition of Sensor Unsubscribe command to server. Current unsupported.
@@ -1335,6 +1373,7 @@ public:
 
 	virtual ~FBPSensorUnsubscribeCommand() = default;
 
+	virtual void Broadcast(UBPDeviceSubsystem &Subsystem) const override;
 };
 
 /**A selection of helpers for handling messages and types.*/
@@ -1369,7 +1408,7 @@ public:
 	};
 
 	/*For converting a received JSON from Intiface into a struct as defined in this header*/
-	static TArray<FInstancedStruct> DeserializeMessage(const TOptional<UObject*> Context, const FString& Message);
+	static TArray<TInstancedStruct<FBPMessageBase>> DeserializeMessage(const TOptional<UObject*> Context, const FString& Message);
 
 	/*Helper for getting the UScriptStruct based on its name in String form
 	Neccessary for the conversion from Intiface's unique way of packaging JSON.
