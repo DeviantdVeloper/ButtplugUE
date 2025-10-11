@@ -47,7 +47,7 @@ DECLARE_DYNAMIC_DELEGATE_OneParam(FBPInstancedResponseDelegate, const FInstanced
 //Blank delegate, for simple triggers.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBPBasicDelegate);
 
-class UBPManagedCommand;
+class FBPManagedCommand;
 class UCurveFloat;
 
 /** This is the main Subsystem for communicating with Intiface, and by extension controlling devices.
@@ -155,8 +155,7 @@ private:
 	template<typename T, typename... TArgs>
 	int32 PackAndSendMessage(TOptional<FBPInstancedResponseDelegate> ResponseDelegate, TArgs&&... InArgs);
 
-	UPROPERTY()
-	TMap<FGuid, UBPManagedCommand*> ManagedCommands;
+	TMap<FGuid, TSharedPtr<FBPManagedCommand>> ManagedCommands;
 
 public:
 
