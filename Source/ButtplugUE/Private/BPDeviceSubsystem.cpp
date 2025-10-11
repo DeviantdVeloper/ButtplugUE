@@ -93,39 +93,19 @@ void UBPDeviceSubsystem::OnClosed(int32 StatusCode, const FString& Reason, bool 
 void UBPDeviceSubsystem::OnMessage(const FString& Message)
 {
 	BPLog::Message(this, "Message Received: " + Message);
-	TArray<FInstancedStruct> Messages = UBPTypes::DeserializeMessage(this, Message);
+	TArray<TInstancedStruct<FBPMessageBase>> Messages = UBPTypes::DeserializeMessage(this, Message);
 
-	for (const FInstancedStruct& Msg : Messages)
+	for (auto& MsgStruct : Messages)
 	{
-		//TODO see if there is a better way to do this without a manual IF statement
-		//Might end up being another map :(
-		if (Msg.GetScriptStruct() == FBPMessageStatusOk::StaticStruct()) { OnMessageStatusOkReceived.Broadcast(Msg.Get<FBPMessageStatusOk>()); }
-		else if (Msg.GetScriptStruct() == FBPMessageStatusError::StaticStruct()) { OnMessageStatusErrorReceived.Broadcast(Msg.Get<FBPMessageStatusError>()); }
-		else if (Msg.GetScriptStruct() == FBPMessageStatusPing::StaticStruct()) { OnMessageStatusPingReceived.Broadcast(Msg.Get<FBPMessageStatusPing>()); }
-		else if (Msg.GetScriptStruct() == FBPMessageRequestServerInfo::StaticStruct()) { OnMessageRequestServerInfoReceived.Broadcast(Msg.Get<FBPMessageRequestServerInfo>()); }
-		else if (Msg.GetScriptStruct() == FBPMessageServerInfo::StaticStruct()) { OnMessageServerInfoReceived.Broadcast(Msg.Get<FBPMessageServerInfo>()); }
-		else if (Msg.GetScriptStruct() == FBPStartScanning::StaticStruct()) { OnStartScanningReceived.Broadcast(Msg.Get<FBPStartScanning>()); }
-		else if (Msg.GetScriptStruct() == FBPStopScanning::StaticStruct()) { OnStopScanningReceived.Broadcast(Msg.Get<FBPStopScanning>()); }
-		else if (Msg.GetScriptStruct() == FBPScanningFinished::StaticStruct()) { OnScanningFinishedReceived.Broadcast(Msg.Get<FBPScanningFinished>()); }
-		else if (Msg.GetScriptStruct() == FBPRequestDeviceList::StaticStruct()) { OnRequestDeviceListReceived.Broadcast(Msg.Get<FBPRequestDeviceList>()); }
-		else if (Msg.GetScriptStruct() == FBPDeviceList::StaticStruct()) { OnDeviceListReceived.Broadcast(Msg.Get<FBPDeviceList>()); }
-		else if (Msg.GetScriptStruct() == FBPDeviceAdded::StaticStruct()) { OnDeviceAddedReceived.Broadcast(Msg.Get<FBPDeviceAdded>()); }
-		else if (Msg.GetScriptStruct() == FBPDeviceRemove::StaticStruct()) { OnDeviceRemoveReceived.Broadcast(Msg.Get<FBPDeviceRemove>()); }
-		else if (Msg.GetScriptStruct() == FBPStopDeviceCmd::StaticStruct()) { OnStopDeviceCmdReceived.Broadcast(Msg.Get<FBPStopDeviceCmd>()); }
-		else if (Msg.GetScriptStruct() == FBPStopAllDevices::StaticStruct()) { OnStopAllDevicesReceived.Broadcast(Msg.Get<FBPStopAllDevices>()); }
-		else if (Msg.GetScriptStruct() == FBPScalarCommand::StaticStruct()) { OnScalarCommandReceived.Broadcast(Msg.Get<FBPScalarCommand>()); }
-		else if (Msg.GetScriptStruct() == FBPLinearCommand::StaticStruct()) { OnLinearCommandReceived.Broadcast(Msg.Get<FBPLinearCommand>()); }
-		else if (Msg.GetScriptStruct() == FBPRotateCommand::StaticStruct()) { OnRotateCommandReceived.Broadcast(Msg.Get<FBPRotateCommand>()); }
-		else if (Msg.GetScriptStruct() == FBPSensorMessageBase::StaticStruct()) { OnSensorMessageBaseReceived.Broadcast(Msg.Get<FBPSensorMessageBase>()); }
-		else if (Msg.GetScriptStruct() == FBPSensorReadCommand::StaticStruct()) { OnSensorReadCommandReceived.Broadcast(Msg.Get<FBPSensorReadCommand>()); }
-		else if (Msg.GetScriptStruct() == FBPSensorReading::StaticStruct()) { OnSensorReadingReceived.Broadcast(Msg.Get<FBPSensorReading>()); }
-		else if (Msg.GetScriptStruct() == FBPSensorSubscribeCommand::StaticStruct()) { OnSensorSubscribeCommandReceived.Broadcast(Msg.Get<FBPSensorSubscribeCommand>()); }
-		else if (Msg.GetScriptStruct() == FBPSensorUnsubscribeCommand::StaticStruct()) { OnSensorUnsubscribeCommandReceived.Broadcast(Msg.Get<FBPSensorUnsubscribeCommand>()); }
-
-		if (ResponseDelegates.Contains(Msg.GetPtr<FBPMessageBase>()->GetId()))
+		if (const auto* Msg = MsgStruct.GetPtr())
 		{
-			ResponseDelegates.Find(Msg.GetPtr<FBPMessageBase>()->GetId())->ExecuteIfBound(Msg);
-			ResponseDelegates.Remove(Msg.GetPtr<FBPMessageBase>()->GetId());
+			Msg->Broadcast(*this);
+
+			if (FBPInstancedResponseDelegate ResponseDelegate; ResponseDelegates.RemoveAndCopyValue(Msg->GetId(), ResponseDelegate))
+			{
+				// TODO: Make this typesafe and avoid a copy
+				ResponseDelegate.ExecuteIfBound(FInstancedStruct::Make(*Msg));
+			}
 		}
 	}
 }
