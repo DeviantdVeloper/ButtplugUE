@@ -76,7 +76,7 @@ void UBPDeviceSubsystem::OnConnectionError(const FString& Error)
 	Args.Add("Server", UButtplugUESettings::GetButtplugServer());
 	Args.Add("Port", UButtplugUESettings::GetButtplugPort());
 	Args.Add("Error", Error);
-	BPLog::Error(this, "Failed to Connect to Buttplug Server at: {Server}! Check that the Intiface Central is running and you have the right server address/port. Error Message: {Error}", Args);
+	BPLog::Error(this, "Failed to Connect to Buttplug Server at: {Server}:{Port}! Check that the Intiface Central is running and you have the right server address/port. Error Message: {Error}", Args);
 }
 
 void UBPDeviceSubsystem::OnClosed(int32 StatusCode, const FString& Reason, bool bWasClean)
