@@ -1,20 +1,16 @@
 // Copyright d/Dev 2023
 
 #include "BPTypes.h"
-#include "BPLogging.h"
 
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonReader.h"
-#include "Dom/JsonObject.h"
 
 TArray<FInstancedStruct> UBPTypes::DeserializeMessage(const TOptional<UObject*> Context, const FString& Message)
 {
 	TArray<FInstancedStruct> Out;
-	FString CleanedMessage = "{\"Messages\": " + Message + "}"; //wrap it to make it an array of messages
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(*CleanedMessage);
-	FJsonSerializer::Deserialize(JsonReader, JsonObject);
-	TArray<TSharedPtr<FJsonValue>> Messages = JsonObject->GetArrayField(TEXT("Messages")); //get the array of messages
+	const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Message);
+	TArray<TSharedPtr<FJsonValue>> Messages;
+	FJsonSerializer::Deserialize(JsonReader, Messages);
 
 	for(const TSharedPtr<FJsonValue>& Msg : Messages)
 	{
