@@ -8,6 +8,11 @@ If you use this in your project(s), please consider supporting its continued dev
 
 ---
 
+![No AI](./Resources/readme/no-ai.png)
+No generative AI (derogatory) was used in the creation of this plugin, and never will be.
+
+---
+
 ## Projects Using this Plugin
 
 Let me know if you want your project featured here!
@@ -31,6 +36,7 @@ Tested with Intiface Central v2.6.4+30
 | 5.4    | Deprecated       | Check Releases                      |
 | 5.5    | Deprecated       | Check Releases                      |
 | 5.6    | Yes              |                                     |
+| 5.7    | Yes              |                                     |
 
 ### Supported Platforms
 
